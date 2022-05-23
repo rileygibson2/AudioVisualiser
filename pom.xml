@@ -88,12 +88,12 @@
 	    <version>20220320</version>
 	</dependency>
 	
-	<!-- https://mvnrepository.com/artifact/com.tagtraum/jipes -->
+	<!-- https://mvnrepository.com/artifact/com.tagtraum/jipes 
 	<dependency>
 	    <groupId>com.tagtraum</groupId>
 	    <artifactId>jipes</artifactId>
 	    <version>0.9.17</version>
-	</dependency>
+	</dependency>-->
   
 	  <dependency>
 	      <groupId>junit</groupId>

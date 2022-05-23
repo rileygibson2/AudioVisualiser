@@ -1,18 +1,18 @@
 package main.java.core;
 
 public class Painter extends Thread {
-	Render c;
+	Render render;
 
-	public Painter(Render c) {
-		this.c = c;
+	public Painter(Render render) {
+		this.render = render;
 	}
 
 	@Override
 	public void run() {
-		while (c.paint) {
-			try {Thread.sleep(20);}
+		while (render.paint) {
+			try {Thread.sleep(10);}
 			catch (InterruptedException er) {throw new Error("Sleep error");}
-			c.repaint();
+			render.repaint();
 		}
 	}
 
