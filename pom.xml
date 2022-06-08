@@ -39,7 +39,7 @@
                 </execution>
             </executions>
             <configuration> 
-                <mainClass>AudioVisualiser</mainClass>
+                <mainClass>main.java.core.Test</mainClass>
                 <includeSystemScope>true</includeSystemScope>
                 <finalName>audiovisualiser</finalName>
             </configuration>

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -35,12 +36,12 @@ public class AudioVisualiser {
 	public float[] magnitudes;
 
 	public AudioVisualiser() {
-		render = Render.initialise(this);
+		//render = Render.initialise(this);
 		initialise();
 	}
 
 
-	public void initialise() {
+	public void initialiseSpectro() {
 		final AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, false);
 		try {
 			//Input stuff
@@ -101,9 +102,9 @@ public class AudioVisualiser {
 		return averaged;
 	}
 
-	/*public void initialise() {
+	public void initialise() {
 		AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 2, 4, 44100, false);
-		format = new AudioFormat(8000.0f,8,1,true,false);
+		//format = new AudioFormat(8000.0f,8,1,true,false);
 
 		try {
 			//targetLine = getTargetDataLine("Built-in Microphone");
@@ -145,7 +146,7 @@ public class AudioVisualiser {
 		catch(InterruptedException ie) { ie.printStackTrace();}
 		catch (LineUnavailableException e1) {System.out.println("Problem opening line");}
 
-	}*/
+	}
 
 	public TargetDataLine getTargetDataLine(String name) {
 		Line.Info lineInfo = null;
