@@ -64,7 +64,7 @@ public class Render extends JPanel {
 
 	public Render(AudioVisualiser av) {
 		this.av = av;
-		Render.painter = new Painter(this);
+		//Render.painter = new Painter(this);
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(false);
 

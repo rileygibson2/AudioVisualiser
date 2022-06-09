@@ -22,7 +22,7 @@ import main.java.core.FFT.FFT;
 
 public class AudioVisualiser {
 
-	Render render;
+	SpectrumRender render;
 	FFT fft;
 	HashMap<String, Line.Info> ins = new HashMap<>();
 	TargetDataLine targetLine;
@@ -34,14 +34,30 @@ public class AudioVisualiser {
 	public final static int groupBlocks = 1; //Number of blocks to group togather in display
 	
 	public float[] magnitudes;
-
+	public int[] testMags = {10, 21, 30, 29, 14, 3, 36, 45, 41, 2, 12, 28, 18, 31, 30, 42, 38, 27, 17, 20, 9}; //Magnitudes used for ui testing
+	
+	public final int buckets = 21; //Number of spectrum buckets
+	public final int ampRange = 45; //Range of possible amplitudes for each bucket
+	
 	public AudioVisualiser() {
-		//render = Render.initialise(this);
-		initialise();
+		render = SpectrumRender.initialise(this);
+		for (int i=0; i<testMags.length; i++) render.visualMags[i] = testMags[i];
+		//initialise();
+	}
+	
+	public void incrementTestMags() {
+		for (int i=0; i<testMags.length; i++) {
+			if (random(0, 1)==1) testMags[i] = random(0, ampRange);
+		}
+	}
+	
+	public void resetTestMags() {
+		for (int i=0; i<testMags.length; i++) {
+			testMags[i] = 0;
+		}
 	}
 
-
-	public void initialiseSpectro() {
+	private void initialiseSpectro() {
 		final AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, false);
 		try {
 			//Input stuff
@@ -102,7 +118,7 @@ public class AudioVisualiser {
 		return averaged;
 	}
 
-	public void initialise() {
+	private void initialise() {
 		AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 2, 4, 44100, false);
 		//format = new AudioFormat(8000.0f,8,1,true,false);
 
@@ -183,12 +199,14 @@ public class AudioVisualiser {
 		}
 	}
 
-
 	public static void main(String[] args) {
 		new AudioVisualiser();
 	}
-
-
+	
+	public static int random(double min, double max){
+		return (int) ((Math.random()*((max-min)+1))+min);
+	}
+	
 	/*final DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 			final TargetDataLine targetLine = (TargetDataLine) AudioSystem.getLine(info);
 			targetLine.open();
