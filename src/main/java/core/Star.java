@@ -27,7 +27,7 @@ public class Star {
 		this.pos = new Point(AudioVisualiser.random(bounds.x, bounds.width), AudioVisualiser.random(bounds.y, bounds.height));
 		this.c = new Color(200, 200, 200);
 		
-		haloCut = AudioVisualiser.random(0, 80)/100d;
+		haloCut = AudioVisualiser.random(0, 80)/100d; //Randomise starting point for twinkle
 		calculateIncrements();
 	}
 	

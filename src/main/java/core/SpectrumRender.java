@@ -1,7 +1,6 @@
 package main.java.core;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -10,52 +9,41 @@ import java.awt.event.KeyListener;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-public class SpectrumRender extends JPanel implements KeyListener {
-	
-	AudioVisualiser av;
-	public static JFrame frame;
-	public static int sW = 1450, sH = 900;
-	static Painter painter;
-	public boolean paint; //Kill switch for paint thread
-	public boolean painting; //Whether a paint is currently occuring, used for synchronisation
+public class SpectrumRender extends Render implements KeyListener {
 	
 	//Color scroll
-	int stage; //What stage of the color scroll we are in
-	int point; //At what point in that stage are we in
+	private int stage; //What stage of the color scroll we are in
+	private int point; //At what point in that stage are we in
 	
 	//Cell
-	int[] visualMags; //What the magnitudes are in the render, allows for the transition down magnitudes
-	int ceiling; //Max height of spectrum cells
-	int cellW, cellXOff, cellH, cellYOff;
+	private int ceiling; //Max height of spectrum cells
+	private int cellW, cellXOff, cellH, cellYOff;
 	static final int curve = 12;
 	
 	//Stars
-	public Set<Star> stars;
+	private Set<Star> stars;
+	private int numStars = 100;
+	private Rectangle starSpace = new Rectangle(0, (int) (sH*0.4), sW, sH); //Bounds for stars
 	
 	//Blackout
 	public boolean blackout = false;
 	int blackoutOp = 0;
 	
-	public void setup() {
+	private void setup() {
 		ceiling = (int) (sH*0.8);
 		cellW = sW/av.buckets;
 		cellXOff = (int) (cellW*0.1);
 		cellW = (int) (cellW*0.8);
 		
-		cellH = ceiling/av.ampRange;
+		cellH = ceiling/av.maxAmp;
 		cellYOff = (int) (cellH*0.15);
 		cellH = (int) (cellH*0.7);
 		
-		visualMags = new int[av.ampRange];
+		visualMags = new double[av.buckets];
 		stage = 1;
 		point = 0;
 		stars = new HashSet<Star>();
-		for (int i=0; i<100; i++) {
-			stars.add(new Star(new Rectangle(0, sH/2, sW, sH), this));
-		}
+		for (int i=0; i<numStars; i++) stars.add(new Star(starSpace, this));
 	}
 	
 	@Override
@@ -92,9 +80,10 @@ public class SpectrumRender extends JPanel implements KeyListener {
 	 * but will jump with a low to high transition.
 	 */
 	public void incrementVisualMags() {
+		if (av.magnitudes==null) return;
 		for (int i=0; i<av.buckets; i++) {
-			if (visualMags[i]>av.testMags[i]) visualMags[i]--;
-			if (visualMags[i]<av.testMags[i]) visualMags[i] = av.testMags[i];
+			if (visualMags[i]>av.magnitudes[i]) visualMags[i]--;
+			if (visualMags[i]<av.magnitudes[i]) visualMags[i] = av.magnitudes[i];
 		}
 	}
 	
@@ -182,7 +171,8 @@ public class SpectrumRender extends JPanel implements KeyListener {
 	}
 	
 	private void drawBuckets(Graphics2D g) {
-		int mag, op, j;
+		double mag;
+		int op, j;
 		Color c = colorScroll(0);
 	
 		for (int i=0; i<av.buckets; i++) {
@@ -212,36 +202,17 @@ public class SpectrumRender extends JPanel implements KeyListener {
 	}
 
 	public SpectrumRender(AudioVisualiser av) {
-		this.av = av;
+		super(av, 1450, 900);
+		Render.painter = new SpectrumPainter(this);
 		setup();
-		SpectrumRender.painter = new Painter(this);
 		addKeyListener(this);
-		setFocusable(true);
-		setFocusTraversalKeysEnabled(false);
-
-		this.paint = true;
-		painter.start();
+		
+		startPaint();
 	}
 
 	public static SpectrumRender initialise(AudioVisualiser av) {
 		SpectrumRender panel = new SpectrumRender(av);
-		
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				frame = new JFrame();
-				panel.setPreferredSize(new Dimension(sW, sH));
-				frame.getContentPane().add(panel);
-
-				//Label and build
-				frame.setTitle("AudioVisualiser");
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-				//Finish up
-				frame.setVisible(true);
-				frame.pack();
-			}
-		});
-		
+		initialise(panel);
 		return panel;
 	}
 
@@ -250,4 +221,36 @@ public class SpectrumRender extends JPanel implements KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {}
+}
+
+class SpectrumPainter extends Painter {
+
+	public SpectrumPainter(Render render) {
+		super(render);
+	}
+
+	@Override
+	public void run() {
+		SpectrumRender r = (SpectrumRender) render;
+		
+		int count = 0;
+		while (render.paint) {
+			try {Thread.sleep(20);}
+			catch (InterruptedException er) {throw new Error("Sleep error");}
+			count++;
+			if (count>spacing) count = 0;
+			
+			//Paint
+			r.repaint();
+			
+			//Increment
+			r.increaseColorScroll(2);
+			r.flickerStars();
+			if (count%2==0) r.incrementVisualMags();
+			
+			if (r.blackout&&r.blackoutOp<255) r.blackoutOp++;
+			if (!r.blackout&&r.blackoutOp>0) r.blackoutOp--;
+		}
+	}
+
 }
