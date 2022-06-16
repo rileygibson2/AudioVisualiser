@@ -1,29 +1,28 @@
-package main.java.core;
+package main.java.renders.basic;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import main.java.core.AudioVisualiser;
+import main.java.renders.Painter;
+import main.java.renders.Render;
 
 public class BasicRender extends Render {
 	
 	private int zones;
 	private int zoneW;
 	private void setup() {
-		zones = av.buckets;
+		zones = 700;
 		zoneW = sW/zones;
-		System.out.println("zones = "+zones+", "+zoneW);
 	}
 	
 	@Override
 	public void paintComponent(Graphics g1d) {
 		Graphics2D g = (Graphics2D) g1d;
 		//Reset screen
-		//g.setColor(Color.BLACK);
-		//g.fillRect(0, 0, sW, sH);
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 0, sW, sH);
 		
 		drawZones(g);
 	}
@@ -37,9 +36,9 @@ public class BasicRender extends Render {
 			g.fillRect(z*zoneW, 0, zoneW, sH);
 		}*/
 		
-		g.setColor(Color.RED);
+		g.setColor(Color.WHITE);
 		for (int i=0; i<av.magnitudes.length; i++) {
-			if (i>av.buckets) break;
+			if (i>av.magnitudes.length) break;
 			int val = (int) (av.magnitudes[i]*10);
 			g.fillRect(i*zoneW, sH-val, zoneW, val);
 		}

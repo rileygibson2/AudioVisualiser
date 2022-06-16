@@ -1,12 +1,14 @@
-package main.java.core;
+package main.java.renders.albumcover;
 
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import main.java.core.AudioVisualiser;
+
 public class Star {
 	//Basic
-	SpectrumRender render;
+	AlbumCoverRender render;
 	Rectangle bounds;
 	public int size;
 	public Point pos;
@@ -19,15 +21,17 @@ public class Star {
 	public double haloCut;
 	
 	private int flickerDir = -1; //Used to control direction of flickering and modulation
+	private double flickerSpeed = 0.015;
 	
-	public Star(Rectangle bounds, SpectrumRender render) {
+	public Star(Rectangle bounds, AlbumCoverRender render) {
 		this.render = render;
 		this.bounds = bounds; //Stored for repositioning
 		this.size = 2;
 		this.pos = new Point(AudioVisualiser.random(bounds.x, bounds.width), AudioVisualiser.random(bounds.y, bounds.height));
 		this.c = new Color(200, 200, 200);
 		
-		haloCut = AudioVisualiser.random(0, 80)/100d; //Randomise starting point for twinkle
+		this.haloCut = AudioVisualiser.random(0, 80)/100d; //Randomise starting point for twinkle
+		this.flickerSpeed = AudioVisualiser.random(5, 20)/1000d;
 		calculateIncrements();
 	}
 	
@@ -43,7 +47,7 @@ public class Star {
 	}
 	
 	public void flicker() {
-		haloCut += flickerDir*0.015; //Move halo
+		haloCut += flickerDir*flickerSpeed; //Move halo
 		if (haloCut%0.05<0.01) {
 			glowCut += flickerDir; //Move glow but less frequently
 		}

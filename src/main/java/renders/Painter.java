@@ -1,8 +1,8 @@
-package main.java.core;
+package main.java.renders;
 
 public abstract class Painter extends Thread {
-	Render render;
-	int spacing = 100;
+	protected Render render;
+	protected int spacing = 100;
 
 	public Painter(Render render) {
 		this.render = render;

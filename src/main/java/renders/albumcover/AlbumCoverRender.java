@@ -1,4 +1,4 @@
-package main.java.core;
+package main.java.renders.albumcover;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -9,7 +9,11 @@ import java.awt.event.KeyListener;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SpectrumRender extends Render implements KeyListener {
+import main.java.core.AudioVisualiser;
+import main.java.renders.Painter;
+import main.java.renders.Render;
+
+public class AlbumCoverRender extends Render implements KeyListener {
 	
 	//Color scroll
 	private int stage; //What stage of the color scroll we are in
@@ -29,17 +33,21 @@ public class SpectrumRender extends Render implements KeyListener {
 	public boolean blackout = false;
 	int blackoutOp = 0;
 	
+	//Magnitude formatting
+	public final int buckets = 21; //Number of spectrum buckets
+	public final int maxAmp = 45; //Range of possible amplitudes for each bucket
+	
 	private void setup() {
 		ceiling = (int) (sH*0.8);
-		cellW = sW/av.buckets;
+		cellW = sW/buckets;
 		cellXOff = (int) (cellW*0.1);
 		cellW = (int) (cellW*0.8);
 		
-		cellH = ceiling/av.maxAmp;
+		cellH = ceiling/maxAmp;
 		cellYOff = (int) (cellH*0.15);
 		cellH = (int) (cellH*0.7);
 		
-		visualMags = new double[av.buckets];
+		visualMags = new double[buckets];
 		stage = 1;
 		point = 0;
 		stars = new HashSet<Star>();
@@ -79,12 +87,40 @@ public class SpectrumRender extends Render implements KeyListener {
 	 * Means that buckets will not jump down when magnitude goes from high to low,
 	 * but will jump with a low to high transition.
 	 */
-	public void incrementVisualMags() {
+	public void incrementVisualMags(boolean increaseFall) {
+		//Cut unwanted frequencys and average into set number of buckets
 		if (av.magnitudes==null) return;
-		for (int i=0; i<av.buckets; i++) {
-			if (visualMags[i]>av.magnitudes[i]) visualMags[i]--;
-			if (visualMags[i]<av.magnitudes[i]) visualMags[i] = av.magnitudes[i];
+		double realMags[] = cutandAverageMags(0, 100);
+		
+		for (int i=0; i<buckets; i++) {
+			if (increaseFall&&visualMags[i]>realMags[i]) visualMags[i]--;
+			if (visualMags[i]<realMags[i]) visualMags[i] = realMags[i];
 		}
+	}
+	
+	public double[] cutandAverageMags(int mincut, int maxcut) {
+		if (mincut+maxcut>av.magnitudes.length||mincut<0||mincut>maxcut) throw new Error("Windowing error during cutting and averaging");
+		double[] averaged = new double[buckets];
+		double sum = 0;
+		int count = 0;
+		int bucketCut = (maxcut-mincut)/buckets;
+		int bucketCount = 1;
+
+		for (int i=mincut; i<maxcut; i++) {
+			if (i==mincut+(bucketCount*bucketCut)) {
+				if (bucketCount>=buckets) break;
+
+				if ((sum)>maxAmp) averaged[bucketCount-1] = maxAmp;
+				else averaged[bucketCount-1] = sum;
+				sum = 0;
+				count = 0;
+				bucketCount++;
+			}
+
+			if (av.magnitudes[i]>0) sum += av.magnitudes[i];
+			count++;
+		}
+		return averaged;
 	}
 	
 	/**
@@ -175,8 +211,8 @@ public class SpectrumRender extends Render implements KeyListener {
 		int op, j;
 		Color c = colorScroll(0);
 	
-		for (int i=0; i<av.buckets; i++) {
-			c = colorScroll((av.buckets-i)*30);
+		for (int i=0; i<buckets; i++) {
+			c = colorScroll((buckets-i)*30);
 			mag = visualMags[i];
 			g.setColor(c);
 			for (j=0; j<mag; j++) { //Draw full cells
@@ -201,17 +237,17 @@ public class SpectrumRender extends Render implements KeyListener {
 		}
 	}
 
-	public SpectrumRender(AudioVisualiser av) {
+	public AlbumCoverRender(AudioVisualiser av) {
 		super(av, 1450, 900);
-		Render.painter = new SpectrumPainter(this);
+		Render.painter = new AlbumCoverPainter(this);
 		setup();
 		addKeyListener(this);
 		
 		startPaint();
 	}
 
-	public static SpectrumRender initialise(AudioVisualiser av) {
-		SpectrumRender panel = new SpectrumRender(av);
+	public static AlbumCoverRender initialise(AudioVisualiser av) {
+		AlbumCoverRender panel = new AlbumCoverRender(av);
 		initialise(panel);
 		return panel;
 	}
@@ -223,15 +259,15 @@ public class SpectrumRender extends Render implements KeyListener {
 	public void keyReleased(KeyEvent e) {}
 }
 
-class SpectrumPainter extends Painter {
+class AlbumCoverPainter extends Painter {
 
-	public SpectrumPainter(Render render) {
+	public AlbumCoverPainter(Render render) {
 		super(render);
 	}
 
 	@Override
 	public void run() {
-		SpectrumRender r = (SpectrumRender) render;
+		AlbumCoverRender r = (AlbumCoverRender) render;
 		
 		int count = 0;
 		while (render.paint) {
@@ -246,7 +282,14 @@ class SpectrumPainter extends Painter {
 			//Increment
 			r.increaseColorScroll(2);
 			r.flickerStars();
-			if (count%2==0) r.incrementVisualMags();
+			/* Split up the 'falling' of values that are no longer as tall 
+			 * and the updating of magnitudes. This is because we want to
+			 * see the peaks as they happen, but we also want the falling to
+			 * look slow and controlled and visible.
+			 */
+			//if (count%2==0) r.incrementVisualMags(true); //Update values and do the falling animation
+			//else
+			r.incrementVisualMags(true); //Just update values
 			
 			if (r.blackout&&r.blackoutOp<255) r.blackoutOp++;
 			if (!r.blackout&&r.blackoutOp>0) r.blackoutOp--;

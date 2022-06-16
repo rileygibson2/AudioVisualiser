@@ -1,4 +1,4 @@
-package main.java.core;
+package main.java.renders;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -6,16 +6,19 @@ import java.awt.Graphics;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import main.java.core.AudioVisualiser;
+
 public abstract class Render extends JPanel {
 
-	AudioVisualiser av;
-	public static JFrame frame;
-	public int sW, sH;
-	static Painter painter;
+	protected AudioVisualiser av;
+	protected static JFrame frame;
+	protected int sW;
+	public int sH;
+	protected static Painter painter;
 	public boolean paint; //Kill switch for paint thread
-	public boolean painting; //Whether a paint is currently occuring, used for synchronisation
+	protected boolean painting; //Whether a paint is currently occuring, used for synchronisation
 	
-	double[] visualMags; //What the magnitudes are in the render, allows for the transition down magnitudes
+	protected double[] visualMags; //What the magnitudes are in the render, allows for the transition down magnitudes
 	
 	public Render(AudioVisualiser av, int sW, int sH) {
 		this.av = av;

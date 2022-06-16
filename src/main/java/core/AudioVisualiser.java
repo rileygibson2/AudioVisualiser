@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,11 +22,20 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import main.java.renders.Render;
+import main.java.renders.albumcover.AlbumCoverRender;
+import main.java.renders.basic.BasicRender;
+import main.java.renders.reflective.ReflectiveBlocksRender;
+
 public class AudioVisualiser {
 
 	Render render;
 	HashMap<String, Line.Info> ins = new HashMap<>();
 	TargetDataLine targetLine;
+	
+	//Audio lines
+	TargetDataLine micLine;
+	SourceDataLine speakerLine;
 
 	public final static int blockLength = 1024;
 	public float maxFrequency; //Maximum calculable frequency
@@ -37,30 +45,28 @@ public class AudioVisualiser {
 	public int zones;
 
 	public double[] magnitudes;
-	//public double[] magnitudes = {10, 21, 30, 29, 14, 3, 36, 45, 41, 2, 12, 28, 18, 31, 30, 42, 38, 27, 17, 20, 9}; //Magnitudes used for ui testing
 
-	public final int buckets = 21; //Number of spectrum buckets
-	public final int maxAmp = 45; //Range of possible amplitudes for each bucket
 
 	public AudioVisualiser() {
-		//for (int i=0; i<magnitudes.length; i++) render.visualMags[i] = magnitudes[i];
 		render = BasicRender.initialise(this);
-		render = SpectrumRender.initialise(this);
-		initialiseSpectro();
+		//render = AlbumCoverRender.initialise(this);
+		render = ReflectiveBlocksRender.initialise(this);
+		runSpectro();
 	}
 
-	private void initialiseSpectro() {
-		final AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, false);
+	private void runSpectro() {
+		//44100
+		final AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100*2, 16, 1, 2, 44100, false);
 		try {
 			//Input stuff
-			AudioInputStream audioStream = AudioSystem.getAudioInputStream(new File("lonedigger.wav"));
+			AudioInputStream audioStream = getFileInputStream("lonedigger.wav");
+			//AudioInputStream audioStream = getMicrophoneInputStream(format);
 
 			//Output stuff
 			Info speakerInfo = new DataLine.Info(SourceDataLine.class, format);
-			SourceDataLine sourceLine;
-			sourceLine = (SourceDataLine)AudioSystem.getLine(speakerInfo);
-			sourceLine.open(format);
-			sourceLine.start();
+			speakerLine = (SourceDataLine)AudioSystem.getLine(speakerInfo);
+			speakerLine.open(format);
+			speakerLine.start();
 
 			//Find information
 			maxFrequency = format.getSampleRate()/2;
@@ -74,7 +80,7 @@ public class AudioVisualiser {
 
 			while ((bytesRead = audioStream.read(buffer)) != -1)  {
 				//Write to speakers
-				sourceLine.write(buffer, 0, blockLength);
+				speakerLine.write(buffer, 0, blockLength);
 
 				//Decode bytes into doubles and use JTransforms to do fft on buffer
 				DoubleFFT_1D fft = new DoubleFFT_1D(buffer.length/2);
@@ -82,43 +88,21 @@ public class AudioVisualiser {
 				System.arraycopy(decodeBuffer(buffer, format), 0, magnitudes, 0, buffer.length/2);
 				fft.complexForward(magnitudes);
 
-				//Cut unwanted frequencys and average into set number of buckets
-				magnitudes = cutandAverageMags(0, 200);
+				//Dont average or cut here, renders should do their own manipulation of data into whatever form they need
 			}
 
 			//Release system resources
-			sourceLine.drain();
-			sourceLine.close();
+			speakerLine.drain();
+			speakerLine.close();
 			audioStream.close();
+			if (targetLine!=null) {
+				targetLine.drain();
+				targetLine.close();
+				targetLine = null;
+			}
 		}
-		catch (UnsupportedAudioFileException e) {e.printStackTrace();}
 		catch (IOException e) {e.printStackTrace();}
 		catch (LineUnavailableException e) {e.printStackTrace();}
-	}
-
-	private double[] cutandAverageMags(int mincut, int maxcut) {
-		if (mincut+maxcut>magnitudes.length||mincut<0||mincut>maxcut) throw new Error("Windowing error during cutting and averaging");
-		double[] averaged = new double[buckets];
-		double sum = 0;
-		int count = 0;
-		int bucketCut = (maxcut-mincut)/buckets;
-		int bucketCount = 1;
-
-		for (int i=mincut; i<maxcut; i++) {
-			if (i==mincut+(bucketCount*bucketCut)) {
-				if (bucketCount>=buckets) break;
-				
-				if (sum>maxAmp) averaged[bucketCount-1] = maxAmp;
-				else averaged[bucketCount-1] = sum;
-				sum = 0;
-				count = 0;
-				bucketCount++;
-			}
-
-			if (magnitudes[i]>0) sum += magnitudes[i];
-			count++;
-		}
-		return averaged;
 	}
 
 	static double[] decodeBuffer(byte[] buffer, AudioFormat format) {
@@ -140,6 +124,25 @@ public class AudioVisualiser {
 		}
 
 		return samples;
+	}
+
+	public AudioInputStream getFileInputStream(String fileName) {
+		try {
+			return AudioSystem.getAudioInputStream(new File(fileName));
+		} catch (UnsupportedAudioFileException | IOException e) {
+			throw new Error("Error with getting audio from file.");
+		}
+	}
+
+	public AudioInputStream getMicrophoneInputStream(AudioFormat format) {
+		try {
+			targetLine = (TargetDataLine) AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, format));
+			targetLine.open();
+			System.out.println("TargetLine available: "+targetLine.available());
+			targetLine.start();
+			return new AudioInputStream(targetLine);
+			
+		} catch (LineUnavailableException e) {throw new Error("Error creating input stream from microphone");}
 	}
 
 	private void initialise() {
@@ -230,11 +233,5 @@ public class AudioVisualiser {
 	public static int random(double min, double max){
 		return (int) ((Math.random()*((max-min)+1))+min);
 	}
-
-	/*final DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-			final TargetDataLine targetLine = (TargetDataLine) AudioSystem.getLine(info);
-			targetLine.open();
-			targetLine.start();
-			final AudioInputStream audioStream = new AudioInputStream(targetLine);*/
 
 }
