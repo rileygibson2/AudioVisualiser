@@ -26,9 +26,10 @@ public abstract class Render extends JPanel implements KeyListener {
 
 	protected double[] visualMags; //What the magnitudes are in the render, allows for the transition down magnitudes
 
-	//Blackout
+	//Blackout & Strobe
 	protected boolean blackout = false;
 	protected int blackoutOp = 0;
+	protected boolean strobing, strobeOn, whiteStrobe;
 
 	public Render(Controller av, String name, int sW, int sH) {
 		this.av = av;
@@ -45,16 +46,28 @@ public abstract class Render extends JPanel implements KeyListener {
 
 	public boolean windowVisible() {return this.windowVisible;}
 
+	public boolean isStrobing() {return this.strobing;}
+	
+	public boolean isWhiteStrobe() {return this.whiteStrobe;}
+
 	@Override
 	public void paintComponent(Graphics g1d) {
 		painting = true;
 		Graphics2D g = (Graphics2D) g1d;
-		paint(g);
 
-		//Blackout
-		if (blackoutOp>0) {
-			g.setColor(new Color(0, 0, 0, blackoutOp));
+		//Strobe
+		if (strobing&&strobeOn) {
+			if (whiteStrobe) g.setColor(Color.WHITE);
+			else g.setColor(Color.BLACK);
 			g.fillRect(0, 0, sW, sH);
+		}
+		else if (!strobing||(strobing&&!strobeOn)) {
+			paint(g);
+			//Blackout
+			if (blackoutOp>0) {
+				g.setColor(new Color(0, 0, 0, blackoutOp));
+				g.fillRect(0, 0, sW, sH);
+			}
 		}
 		painting = false;
 	}
@@ -77,7 +90,13 @@ public abstract class Render extends JPanel implements KeyListener {
 		}
 		this.frame.setVisible(windowVisible);
 	}
-	
+
+	public void setStrobe(boolean strobing, boolean whiteStrobe) {
+		this.strobing = strobing;
+		this.whiteStrobe = whiteStrobe;
+		this.strobeOn = false;
+	}
+
 	public abstract Painter getPainter();
 
 	@Override

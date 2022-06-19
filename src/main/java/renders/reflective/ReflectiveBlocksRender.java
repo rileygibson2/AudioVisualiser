@@ -16,7 +16,6 @@ public class ReflectiveBlocksRender extends Render implements KeyListener {
 
 	//Buckets
 	List<ReflectiveBucket> buckets;
-	private int ceiling; //Max height of spectrum cells
 	private int bucketXStart, bucketW, bucketXOff, bucketY;
 	static final int curve = 12;
 
@@ -32,10 +31,10 @@ public class ReflectiveBlocksRender extends Render implements KeyListener {
 		bucketXStart = (int) (sW*0.1);
 		bucketW = (sW-(bucketXStart*2))/numBuckets;
 		bucketXOff = (int) (bucketW*0.1);
-		bucketY = (int) (sH*0.7);
+		bucketY = (int) (sH*0.5);
 
 		buckets = new ArrayList<ReflectiveBucket>();
-		for (int i=0; i<numBuckets; i++) buckets.add(new ReflectiveBucket(new Point(bucketXStart+(i*bucketW)+bucketXOff, bucketY), (int) (bucketW*0.8), this)); 
+		for (int i=0; i<numBuckets; i++) buckets.add(new ReflectiveBucket(new Point(bucketXStart+(i*bucketW)+bucketXOff, bucketY), (int) (bucketW*0.8))); 
 
 		visualMags = new double[numBuckets];
 	}
@@ -65,7 +64,7 @@ public class ReflectiveBlocksRender extends Render implements KeyListener {
 		}
 
 		//Update buckets
-		for (int i=0; i<numBuckets; i++) buckets.get(i).mag = visualMags[i];
+		for (int i=0; i<numBuckets; i++) buckets.get(i).updateMag(visualMags[i]);
 	}
 
 	public double[] cutandAverageMags(int mincut, int maxcut) {

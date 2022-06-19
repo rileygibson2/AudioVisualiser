@@ -24,6 +24,9 @@ public abstract class Painter extends Thread {
 			render.repaint();//Paint
 			iterate(count); //Iterate
 			
+			//Increment strobe
+			if (render.strobing&&count%2==0) render.strobeOn = !render.strobeOn;
+			
 			//Increase blackout
 			if (render.blackout&&render.blackoutOp<255) {
 				render.blackoutOp += 2;

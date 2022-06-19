@@ -32,28 +32,28 @@ import main.java.renders.reflective.ReflectiveBlocksRender;
 public class Controller {
 
 	protected List<Render> renders;
-	HashMap<String, Line.Info> ins = new HashMap<>();
-	TargetDataLine targetLine;
-	
-	//Audio lines
-	TargetDataLine micLine;
-	SourceDataLine speakerLine;
+	private HashMap<String, Line.Info> ins = new HashMap<>();
+	protected boolean capture;
 
-	public final static int blockLength = 1024;
-	public float maxFrequency; //Maximum calculable frequency
-	public float measurementDuration; //Time in seconds that each sample measures
-	public float frequencyResolution;  //Frequency distance between each 'bucket'
+	//Audio lines
+	private TargetDataLine micLine;
+	private SourceDataLine speakerLine;
+
+	private final static int blockLength = 1024;
+	private float maxFrequency; //Maximum calculable frequency
+	private float measurementDuration; //Time in seconds that each sample measures
+	private float frequencyResolution;  //Frequency distance between each 'bucket'
 
 	public double[] magnitudes; //Real, uncut or averaged or modified magnitudes
-
 
 	public Controller() {
 		renders = new ArrayList<Render>();
 		renders.add(BasicRender.initialise(this));
 		renders.add(AlbumCoverRender.initialise(this));
 		renders.add(ReflectiveBlocksRender.initialise(this));
-		
+
 		ControllerGUI.initialise(this);
+		this.capture = true;
 		runSpectro();
 	}
 
@@ -80,24 +80,24 @@ public class Controller {
 			final byte[] buffer = new byte[blockLength];
 			while ((audioStream.read(buffer)) != -1)  {
 				speakerLine.write(buffer, 0, blockLength); //Write to speakers
-
-				//Decode bytes into doubles and use JTransforms to do fft on buffer
-				DoubleFFT_1D fft = new DoubleFFT_1D(buffer.length/2);
-				magnitudes = new double[buffer.length];
-				System.arraycopy(decodeBuffer(buffer, format), 0, magnitudes, 0, buffer.length/2);
-				fft.complexForward(magnitudes);
-
-				//Dont average or cut here, renders should do their own manipulation of data into whatever form they need
+				if (capture) {
+					//Decode bytes into doubles and use JTransforms to do fft on buffer
+					DoubleFFT_1D fft = new DoubleFFT_1D(buffer.length/2);
+					magnitudes = new double[buffer.length];
+					System.arraycopy(decodeBuffer(buffer, format), 0, magnitudes, 0, buffer.length/2);
+					fft.complexForward(magnitudes);
+				}
+				else magnitudes = new double[buffer.length]; //Set to 0 to mitigate frozen visualisers
 			}
 
 			//Release system resources
 			speakerLine.drain();
 			speakerLine.close();
 			audioStream.close();
-			if (targetLine!=null) {
-				targetLine.drain();
-				targetLine.close();
-				targetLine = null;
+			if (micLine!=null) {
+				micLine.drain();
+				micLine.close();
+				micLine = null;
 			}
 		}
 		catch (IOException e) {e.printStackTrace();}
@@ -135,12 +135,12 @@ public class Controller {
 
 	public AudioInputStream getMicrophoneInputStream(AudioFormat format) {
 		try {
-			targetLine = (TargetDataLine) AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, format));
-			targetLine.open();
-			System.out.println("TargetLine available: "+targetLine.available());
-			targetLine.start();
-			return new AudioInputStream(targetLine);
-			
+			micLine = (TargetDataLine) AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, format));
+			micLine.open();
+			System.out.println("TargetLine available: "+micLine.available());
+			micLine.start();
+			return new AudioInputStream(micLine);
+
 		} catch (LineUnavailableException e) {throw new Error("Error creating input stream from microphone");}
 	}
 
@@ -149,22 +149,22 @@ public class Controller {
 		//format = new AudioFormat(8000.0f,8,1,true,false);
 
 		try {
-			targetLine = getTargetDataLine("Built-in Microphone");
-			targetLine.open();
+			micLine = getTargetDataLine("Built-in Microphone");
+			micLine.open();
 
 			//Microphone
-			TargetDataLine targetLine = (TargetDataLine) AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, format));
-			targetLine.open();
+			TargetDataLine micLine = (TargetDataLine) AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, format));
+			micLine.open();
 
-			System.out.println(targetLine.available());
+			System.out.println(micLine.available());
 
 			Thread monitorThread = new Thread() {
 				@Override
 				public void run() {
-					targetLine.start();
+					micLine.start();
 					File outputFile = new File("recording.wav");
 
-					AudioInputStream stream = new AudioInputStream(targetLine);
+					AudioInputStream stream = new AudioInputStream(micLine);
 					int written = 0;
 					try {written = AudioSystem.write(stream, AudioFileFormat.Type.WAVE, outputFile);}
 					catch (IOException e) {throw new Error("Problem writing to file");}
@@ -178,10 +178,10 @@ public class Controller {
 
 			Thread.sleep(3000);
 
-			System.out.println(targetLine.available());
+			System.out.println(micLine.available());
 
-			targetLine.stop();
-			targetLine.close();
+			micLine.stop();
+			micLine.close();
 			System.out.println("End Monitor");
 
 		}
