@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -27,9 +29,9 @@ import main.java.renders.albumcover.AlbumCoverRender;
 import main.java.renders.basic.BasicRender;
 import main.java.renders.reflective.ReflectiveBlocksRender;
 
-public class AudioVisualiser {
+public class Controller {
 
-	Render render;
+	protected List<Render> renders;
 	HashMap<String, Line.Info> ins = new HashMap<>();
 	TargetDataLine targetLine;
 	
@@ -41,16 +43,17 @@ public class AudioVisualiser {
 	public float maxFrequency; //Maximum calculable frequency
 	public float measurementDuration; //Time in seconds that each sample measures
 	public float frequencyResolution;  //Frequency distance between each 'bucket'
-	public final static int groupBlocks = 1; //Number of blocks to group togather in display
-	public int zones;
 
-	public double[] magnitudes;
+	public double[] magnitudes; //Real, uncut or averaged or modified magnitudes
 
 
-	public AudioVisualiser() {
-		render = BasicRender.initialise(this);
-		//render = AlbumCoverRender.initialise(this);
-		render = ReflectiveBlocksRender.initialise(this);
+	public Controller() {
+		renders = new ArrayList<Render>();
+		renders.add(BasicRender.initialise(this));
+		renders.add(AlbumCoverRender.initialise(this));
+		renders.add(ReflectiveBlocksRender.initialise(this));
+		
+		ControllerGUI.initialise(this);
 		runSpectro();
 	}
 
@@ -72,15 +75,11 @@ public class AudioVisualiser {
 			maxFrequency = format.getSampleRate()/2;
 			measurementDuration = blockLength/format.getSampleRate();
 			frequencyResolution = format.getSampleRate()/blockLength;
-			zones = (int) (maxFrequency/frequencyResolution)/groupBlocks;
 
 			//Read file
 			final byte[] buffer = new byte[blockLength];
-			int bytesRead = 0;
-
-			while ((bytesRead = audioStream.read(buffer)) != -1)  {
-				//Write to speakers
-				speakerLine.write(buffer, 0, blockLength);
+			while ((audioStream.read(buffer)) != -1)  {
+				speakerLine.write(buffer, 0, blockLength); //Write to speakers
 
 				//Decode bytes into doubles and use JTransforms to do fft on buffer
 				DoubleFFT_1D fft = new DoubleFFT_1D(buffer.length/2);
@@ -227,11 +226,10 @@ public class AudioVisualiser {
 	}
 
 	public static void main(String[] args) {
-		new AudioVisualiser();
+		new Controller();
 	}
 
 	public static int random(double min, double max){
 		return (int) ((Math.random()*((max-min)+1))+min);
 	}
-
 }

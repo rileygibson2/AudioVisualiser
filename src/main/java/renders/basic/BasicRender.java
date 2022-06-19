@@ -1,10 +1,9 @@
 package main.java.renders.basic;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import main.java.core.AudioVisualiser;
+import main.java.core.Controller;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
@@ -17,9 +16,7 @@ public class BasicRender extends Render {
 		zoneW = sW/zones;
 	}
 	
-	@Override
-	public void paintComponent(Graphics g1d) {
-		Graphics2D g = (Graphics2D) g1d;
+	public void paint(Graphics2D g) {
 		//Reset screen
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, sW, sH);
@@ -43,15 +40,15 @@ public class BasicRender extends Render {
 			g.fillRect(i*zoneW, sH-val, zoneW, val);
 		}
 	}
+	
+	public Painter getPainter() {return new BasicPainter(this);}
 
-	public BasicRender(AudioVisualiser av) {
-		super(av, 700, 700);
-		Render.painter = new BasicPainter(this);
+	public BasicRender(Controller av) {
+		super(av, "Basic", 700, 700);
 		setup();
-		startPaint();
 	}
 
-	public static BasicRender initialise(AudioVisualiser av) {
+	public static BasicRender initialise(Controller av) {
 		BasicRender panel = new BasicRender(av);
 		initialise(panel);
 		return panel;
@@ -60,17 +57,7 @@ public class BasicRender extends Render {
 
 class BasicPainter extends Painter {
 
-	public BasicPainter(Render render) {
-		super(render);
-	}
+	public BasicPainter(Render render) {super(render);}
 
-	@Override
-	public void run() {
-		while (render.paint) {
-			try {Thread.sleep(20);}
-			catch (InterruptedException er) {throw new Error("Sleep error");}
-			render.repaint(); //Paint
-		}
-	}
-
+	public void iterate(int count) {}
 }

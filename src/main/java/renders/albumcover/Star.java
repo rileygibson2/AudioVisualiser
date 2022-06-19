@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import main.java.core.AudioVisualiser;
+import main.java.core.Controller;
 
 public class Star {
 	//Basic
@@ -27,16 +27,16 @@ public class Star {
 		this.render = render;
 		this.bounds = bounds; //Stored for repositioning
 		this.size = 2;
-		this.pos = new Point(AudioVisualiser.random(bounds.x, bounds.width), AudioVisualiser.random(bounds.y, bounds.height));
+		this.pos = new Point(Controller.random(bounds.x, bounds.width), Controller.random(bounds.y, bounds.height));
 		this.c = new Color(200, 200, 200);
 		
-		this.haloCut = AudioVisualiser.random(0, 80)/100d; //Randomise starting point for twinkle
-		this.flickerSpeed = AudioVisualiser.random(5, 20)/1000d;
+		this.haloCut = Controller.random(0, 80)/100d; //Randomise starting point for twinkle
+		this.flickerSpeed = Controller.random(5, 20)/1000d;
 		calculateIncrements();
 	}
 	
 	public void reposition() {
-		this.pos = new Point(AudioVisualiser.random(bounds.x, bounds.width), AudioVisualiser.random(bounds.y, bounds.height));
+		this.pos = new Point(Controller.random(bounds.x, bounds.width), Controller.random(bounds.y, bounds.height));
 	}
 	
 	/**
