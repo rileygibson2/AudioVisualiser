@@ -83,6 +83,7 @@ public abstract class Render extends JPanel implements KeyListener {
 		}
 		else {
 			windowVisible = true;
+			strobing = false;
 			//Wait for old paint thread to die then start new paint thread
 			if (painter!=null&&painter.isAlive()) try {painter.join();} catch (InterruptedException e) {throw new Error("Problem waiting for paint thread to die");}
 			paint = true;
