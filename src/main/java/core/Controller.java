@@ -27,6 +27,7 @@ import org.jtransforms.fft.DoubleFFT_1D;
 import main.java.renders.Render;
 import main.java.renders.albumcover.AlbumCoverRender;
 import main.java.renders.basic.BasicRender;
+import main.java.renders.greenblocks.GreenBlocksRender;
 import main.java.renders.reflective.ReflectiveBlocksRender;
 
 public class Controller {
@@ -51,6 +52,7 @@ public class Controller {
 		renders.add(BasicRender.initialise(this));
 		renders.add(AlbumCoverRender.initialise(this));
 		renders.add(ReflectiveBlocksRender.initialise(this));
+		renders.add(GreenBlocksRender.initialise(this));
 
 		ControllerGUI.initialise(this);
 		this.capture = true;

@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -31,6 +33,9 @@ public abstract class Render extends JPanel implements KeyListener {
 	protected int blackoutOp = 0;
 	protected boolean strobing, strobeOn, whiteStrobe;
 
+	//Gui Buttons
+	public List<Button> buttons;
+
 	public Render(Controller av, String name, int sW, int sH) {
 		this.av = av;
 		this.name = name;
@@ -38,17 +43,29 @@ public abstract class Render extends JPanel implements KeyListener {
 		this.sH = sH;
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(false);
+
+		//Set up basic functionality buttons
+		buttons = new ArrayList<Button>();
+		buttons.add(new Button("Visible", Color.GREEN, Color.RED, "toggleWindow", "windowVisible", false, this));
+		buttons.add(new Button("B/O", Color.RED, Color.BLACK, "toggleBlackout", "isBO", false, this));
+		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleStrobe", "isBlackStrobing", true, this));
+		buttons.add(new Button("W/S", Color.GREEN, Color.BLACK, "toggleWhiteStrobe", "isWhiteStrobing", true, this));
 	}
+
+	/*case BO: if (r.windowVisible()) r.toggleBlackout(); break;
+	case Visible: r.toggleWindow(); break;
+	case WStrobe: r.setStrobe(false, false); break;
+	case BStrobe: r.setStrobe(false, false); break;*/
 
 	public String getName() {return this.name;}
 
-	public boolean getBO() {return this.blackout;}
+	public boolean isBO() {return this.blackout;}
 
 	public boolean windowVisible() {return this.windowVisible;}
 
-	public boolean isStrobing() {return this.strobing;}
-	
-	public boolean isWhiteStrobe() {return this.whiteStrobe;}
+	public boolean isBlackStrobing() {return this.strobing&&!this.whiteStrobe;}
+
+	public boolean isWhiteStrobing() {return this.strobing&&this.whiteStrobe;}
 
 	@Override
 	public void paintComponent(Graphics g1d) {
@@ -74,7 +91,7 @@ public abstract class Render extends JPanel implements KeyListener {
 
 	public abstract void paint(Graphics2D g);
 
-	public void toggleBlackout() {this.blackout = !this.blackout;}
+	public void toggleBlackout() {if (windowVisible()) this.blackout = !this.blackout;}
 
 	public void toggleWindow() {
 		if (windowVisible) {
@@ -92,10 +109,20 @@ public abstract class Render extends JPanel implements KeyListener {
 		this.frame.setVisible(windowVisible);
 	}
 
-	public void setStrobe(boolean strobing, boolean whiteStrobe) {
-		this.strobing = strobing;
-		this.whiteStrobe = whiteStrobe;
-		this.strobeOn = false;
+	public void toggleWhiteStrobe() {
+		if (windowVisible()) {
+			this.strobing = !this.strobing;
+			this.whiteStrobe = !this.whiteStrobe;
+			this.strobeOn = false;
+		}
+	}
+
+	public void toggleStrobe() {
+		if (windowVisible()) {
+			this.strobing = !this.strobing;
+			this.whiteStrobe = false;
+			this.strobeOn = false;
+		}
 	}
 
 	public abstract Painter getPainter();
@@ -132,4 +159,7 @@ public abstract class Render extends JPanel implements KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {}
+
+	//Dummy method used in reflection for buttons which do not require an on check 
+	public boolean cheatTrue() {return true;}
 }

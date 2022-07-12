@@ -11,7 +11,7 @@ import java.awt.event.MouseListener;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import main.java.renders.Painter;
+import main.java.renders.Button;
 import main.java.renders.Render;
 
 public class ControllerGUI extends JPanel implements MouseListener {
@@ -21,7 +21,7 @@ public class ControllerGUI extends JPanel implements MouseListener {
 	static int sH = 700;
 
 	private Controller c;
-	private enum Button {Visible, BO, WStrobe, BStrobe};
+	//private enum Button {Visible, BO, WStrobe, BStrobe};
 
 	//Drawing variables
 	private int rowStart, rowH, rowOffset;
@@ -88,56 +88,29 @@ public class ControllerGUI extends JPanel implements MouseListener {
 		int c = 1;
 		y += (int) (rowH*0.1);
 
-		for (Button b : Button.values()) {
-			Color col = null;
-			String s = "";
-			switch (b) {
-			case BO: 
-				if (!r.windowVisible()) continue;
-				s = r.getBO() ? "UNB/O" : "B/O";
-				col = r.getBO() ? Color.RED : Color.BLACK;
-				break;
-			case BStrobe:
-				if (!r.windowVisible()) continue;
-				s = "B/S";
-				col = r.isStrobing()&&!r.isWhiteStrobe() ? Color.GREEN : Color.BLACK;
-				break;
-			case WStrobe:
-				if (!r.windowVisible()) continue;
-				s = "W/S";
-				col = r.isStrobing()&&r.isWhiteStrobe() ? Color.GREEN : Color.BLACK;
-				break;
-			case Visible:
-				s = "Visible";
-				col = r.windowVisible() ? Color.GREEN : Color.RED;
-				break;
-			}
-
+		for (Button b : r.buttons) {
+			Color col = b.isOn() ? b.onCol : b.offCol;
 			x = (int) (sW-((sW*0.12)*c));
 			g.setColor(col);
 			g.fillRoundRect((int) x, y, (int) (sW*0.1), (int) (rowH*0.8), 10, 10);
 			g.setColor(Color.WHITE);
 			g.drawRoundRect((int) x, y, (int) (sW*0.1), (int) (rowH*0.8), 10, 10);
-			g.drawString(s, (int) (x+sW*0.015), (int) (y+rowH*0.5));
+			g.drawString(b.name, (int) (x+sW*0.015), (int) (y+rowH*0.5));
 			c++;
 		}
 	}
-	
+
 	@Override
 	public void mousePressed(MouseEvent e) {
 		Render r = null;
 		Button b = null;
 		try {
 			r = c.renders.get((e.getY()-rowStart)/(rowH+rowOffset*2));
-			b = Button.values()[(int) ((sW-e.getX())/(sW*0.12))];
+			b = r.buttons.get((int) ((sW-e.getX())/(sW*0.12)));
 		} catch (IndexOutOfBoundsException e1) {};
 
 		if (r!=null&&b!=null) {
-			switch (b) {
-			case WStrobe: r.setStrobe(true, true); break;
-			case BStrobe: r.setStrobe(true, false); break;
-			default: break;
-			}
+			if (b.limitPress) b.toggleAction();
 		}
 		repaint();
 	}
@@ -149,23 +122,15 @@ public class ControllerGUI extends JPanel implements MouseListener {
 			repaint();
 			return;
 		}
-		
+
 		Render r = null;
 		Button b = null;
 		try {
 			r = c.renders.get((e.getY()-rowStart)/(rowH+rowOffset*2));
-			b = Button.values()[(int) ((sW-e.getX())/(sW*0.12))];
+			b = r.buttons.get((int) ((sW-e.getX())/(sW*0.12)));
 		} catch (IndexOutOfBoundsException e1) {};
 
-		if (r!=null&&b!=null) {
-			switch (b) {
-			case BO: if (r.windowVisible()) r.toggleBlackout(); break;
-			case Visible: r.toggleWindow(); break;
-			case WStrobe: r.setStrobe(false, false); break;
-			case BStrobe: r.setStrobe(false, false); break;
-			default: break;
-			}
-		}
+		if (r!=null&&b!=null) b.toggleAction();
 		repaint();
 	}
 
