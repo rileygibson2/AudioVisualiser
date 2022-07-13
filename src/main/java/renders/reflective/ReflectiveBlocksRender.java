@@ -13,7 +13,7 @@ import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
-public class ReflectiveBlocksRender extends Render implements KeyListener {
+public class ReflectiveBlocksRender extends Render {
 
 	//Buckets
 	List<ReflectiveBucket> buckets;
@@ -103,34 +103,12 @@ public class ReflectiveBlocksRender extends Render implements KeyListener {
 		for (ReflectiveBucket b : buckets) b.drawBucket(g, override);
 	}
 
-	@Override
-	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_B:
-			blackout = !blackout;
-			break;
-		}
-	}
-
 	public Painter getPainter() {return new ReflectivePainter(this);}
 
 	public ReflectiveBlocksRender(Controller av) {
-		super(av, "ReflectiveBlocks", 1450, 900);
+		super(av, "ReflectiveBlocks");
 		setup();
-		addKeyListener(this);
 	}
-
-	public static ReflectiveBlocksRender initialise(Controller av) {
-		ReflectiveBlocksRender panel = new ReflectiveBlocksRender(av);
-		initialise(panel);
-		return panel;
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {}
-
-	@Override
-	public void keyReleased(KeyEvent e) {}
 }
 
 class ReflectivePainter extends Painter {

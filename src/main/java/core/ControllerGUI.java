@@ -136,12 +136,13 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 		if (r!=null&&b!=null) b.toggleAction();
 		repaint();
 	}
-	
+
 	@Override
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
-		case KeyEvent.VK_S : for (Render r : c.renders) if (r.windowVisible()) r.toggleBlackStrobe(); break;
-		case KeyEvent.VK_D : for (Render r : c.renders) if (r.windowVisible()) r.toggleWhiteStrobe();
+		case KeyEvent.VK_Z : c.currentRender.toggleBlackStrobe(); break;
+		case KeyEvent.VK_X : c.currentRender.toggleWhiteStrobe(); break;
+		case KeyEvent.VK_SPACE : c.capture = false;
 		}
 		repaint();
 	}
@@ -150,21 +151,15 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 	@Override
 	public void keyReleased(KeyEvent e) {
 		switch (e.getKeyCode()) {
-		case KeyEvent.VK_S :
-			for (Render r : c.renders) {
-				if (r.windowVisible()) {
-					r.toggleBlackStrobe();
-					if (r.isBlackStrobing()) r.toggleBlackStrobe();
-				}
-			}
+		case KeyEvent.VK_Z :
+			c.currentRender.toggleBlackStrobe();
+			if (c.currentRender.isBlackStrobing()) c.currentRender.toggleBlackStrobe();
 			break;
-		case KeyEvent.VK_D :
-			for (Render r : c.renders) {
-				if (r.windowVisible()) {
-					r.toggleWhiteStrobe();
-					if (r.isWhiteStrobing()) r.toggleWhiteStrobe();
-				}
-			}
+		case KeyEvent.VK_X :
+			c.currentRender.toggleWhiteStrobe();
+			if (c.currentRender.isWhiteStrobing()) c.currentRender.toggleWhiteStrobe();
+			break;
+		case KeyEvent.VK_SPACE : c.capture = true;
 		}
 		repaint();
 	}

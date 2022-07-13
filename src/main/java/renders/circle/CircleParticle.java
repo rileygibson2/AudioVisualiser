@@ -9,30 +9,38 @@ import main.java.core.Controller;
 public class CircleParticle {
 	CircleRender r;
 	int size;
+	int glowSize;
 	double speed;
-
 	int bucket;
 	double mag; //The magnitude for the particle
 	Point diff; //Difference from actual point on band
-	static int diffSize = 20;
-	int opacity;
+
 	Color col;
+	int opacity;
+	int glowOpacity;
+
+	//Statics
+	static int diffSize = 20;
 
 	public CircleParticle(int bucket, CircleRender r) {
 		this.bucket = bucket;
 		this.r = r;
 		this.size = Controller.random(1, 4);
+		this.glowSize = Controller.random(10, 20);
 		this.speed = Controller.randomD(0.8, 2);
 		this.opacity = Controller.random(50, 255);
-		this.col = new Color(255, 240, 255);
-
-		if (bucket>160&&bucket<240) {
-			this.speed = Controller.randomD(0.04, 0.8);
-			System.out.println(this.speed);
-		}
-
-		//this.speed = 0.2;
+		this.glowOpacity = Controller.random(5, 20);
 		diff = new Point(Controller.random(-diffSize, diffSize), Controller.random(-diffSize, diffSize));
+
+		//Faster speed for circle extremes
+		if (bucket>160&&bucket<240) this.speed = Controller.randomD(0.04, 0.8);
+	}
+
+	public void setColor(Color c1, Color c2) {
+		int r = Controller.random(c1.getRed(), c2.getRed());
+		int g = Controller.random(c1.getGreen(), c2.getGreen());
+		int b = Controller.random(c1.getBlue(), c2.getBlue());
+		this.col = new Color(r, g, b);
 	}
 
 	public void increment(double mag) {
@@ -48,23 +56,26 @@ public class CircleParticle {
 	}
 
 	public void draw(Graphics2D g, int xStart, int yStart) {
-		//g.setColor(Color.PINK);
-		g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), opacity));
-		if (mag==0) g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), 5));
-		//Bottom half
-		Point pos = r.getRealPosOnNormal(this, false);
-		if (mag>0) { //Add random position adjustment for texture
-			pos.x += diff.x;
-			pos.y += diff.y;
-		}
-		g.fillOval((int) (xStart+pos.x-size/2), (int) (yStart+pos.y-size/2), size, size);
+		
+		for (int i=0; i<2; i++) { //Do twice, once mirrored
+			Point pos = r.getRealPosOnNormal(this, (i==0) ? false : true);
+			
+			if (mag>0) { //Dont draw dot at no magnitude position
+				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), opacity));
+				//Bottom half
+				if (mag>0) { //Add random position adjustment for texture
+					pos.x += diff.x;
+					pos.y += diff.y;
+				}
 
-		//Top half of circle
-		pos = r.getRealPosOnNormal(this, true);
-		if (mag>0) { //Add random position adjustment for texture
-			pos.x += diff.x;
-			pos.y += diff.y;
+				if (!r.glow) {
+				g.fillOval((int) (xStart+pos.x-size/2), (int) (yStart+pos.y-size/2), size, size);
+				}
+			}	
+			//Glow
+			g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), glowOpacity));
+			if (mag==0) g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), (glowOpacity-10<0) ? 5 : glowOpacity-10));
+			g.fillOval((int) (xStart+pos.x-glowSize/4), (int) (yStart+pos.y-glowSize/2), glowSize, glowSize);
 		}
-		g.fillOval((int) (xStart+pos.x-size/2), (int) (yStart+pos.y-size/2), size, size);
 	}
 }

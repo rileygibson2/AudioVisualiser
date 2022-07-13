@@ -14,13 +14,11 @@ import javax.swing.JPanel;
 
 import main.java.core.Controller;
 
-public abstract class Render extends JPanel implements KeyListener {
+public abstract class Render {
 
 	protected Controller av;
-	protected JFrame frame;
 	protected int sW;
-	public int sH;
-	private boolean windowVisible = false;
+	protected int sH;
 	protected Painter painter;
 	public boolean paint; //Kill switch for paint thread
 	protected boolean painting; //Whether a paint is currently occuring, used for synchronisation
@@ -36,13 +34,11 @@ public abstract class Render extends JPanel implements KeyListener {
 	//Gui Buttons
 	public List<Button> buttons;
 
-	public Render(Controller av, String name, int sW, int sH) {
+	public Render(Controller av, String name) {
 		this.av = av;
 		this.name = name;
-		this.sW = sW;
-		this.sH = sH;
-		setFocusable(true);
-		setFocusTraversalKeysEnabled(false);
+		this.sW = av.rP.sW;
+		this.sH = av.rP.sH;
 
 		//Set up basic functionality buttons
 		buttons = new ArrayList<Button>();
@@ -59,14 +55,13 @@ public abstract class Render extends JPanel implements KeyListener {
 
 	public boolean isBO() {return this.blackout;}
 
-	public boolean windowVisible() {return this.windowVisible;}
+	public boolean windowVisible() {return av.currentRender==this;}
 
 	public boolean isBlackStrobing() {return this.strobing&&!this.whiteStrobe;}
 
 	public boolean isWhiteStrobing() {return this.strobing&&this.whiteStrobe;}
 
-	@Override
-	public void paintComponent(Graphics g1d) {
+	public void paint(Graphics g1d) {
 		painting = true;
 		Graphics2D g = (Graphics2D) g1d;
 
@@ -94,19 +89,23 @@ public abstract class Render extends JPanel implements KeyListener {
 	public void toggleBlackout() {if (windowVisible()) this.blackout = !this.blackout;}
 
 	public void toggleWindow() {
-		if (windowVisible) {
-			windowVisible = false;
-			paint = false;
+		if (av.currentRender==this) { //Toggle off
+			av.currentRender = null;
+			paint = false; //Will kill paint thread
 		}
-		else {
-			windowVisible = true;
+		else { //Toggle on
+			if (av.currentRender!=null) { //Notify old render
+				av.currentRender.toggleWindow();
+			}
+			av.currentRender = this;
+			av.rP.frame.setTitle(name);
+			
 			strobing = false;
 			//Wait for old paint thread to die then start new paint thread
 			if (painter!=null&&painter.isAlive()) try {painter.join();} catch (InterruptedException e) {throw new Error("Problem waiting for paint thread to die");}
 			paint = true;
 			painter = getPainter();
 		}
-		this.frame.setVisible(windowVisible);
 	}
 
 	public void toggleWhiteStrobe() {
@@ -126,39 +125,6 @@ public abstract class Render extends JPanel implements KeyListener {
 	}
 
 	public abstract Painter getPainter();
-
-	@Override
-	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_B:
-			toggleBlackout();
-			break;
-		}
-	}
-
-	public static void initialise(Render panel) {
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				panel.frame = new JFrame();
-				panel.setPreferredSize(new Dimension(panel.sW, panel.sH));
-				panel.frame.getContentPane().add(panel);
-
-				//Label and build
-				panel.frame.setTitle(panel.name);
-				panel.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-				//Finish up
-				panel.frame.setVisible(false);
-				panel.frame.pack();
-			}
-		});
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {}
-
-	@Override
-	public void keyReleased(KeyEvent e) {}
 
 	//Dummy method used in reflection for buttons which do not require an on check 
 	public boolean cheatTrue() {return true;}

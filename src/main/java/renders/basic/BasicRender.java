@@ -11,6 +11,7 @@ public class BasicRender extends Render {
 	
 	private int zones;
 	private int zoneW;
+	
 	private void setup() {
 		zones = 700;
 		zoneW = sW/zones;
@@ -44,14 +45,8 @@ public class BasicRender extends Render {
 	public Painter getPainter() {return new BasicPainter(this);}
 
 	public BasicRender(Controller av) {
-		super(av, "Basic", 700, 700);
+		super(av, "Basic");
 		setup();
-	}
-
-	public static BasicRender initialise(Controller av) {
-		BasicRender panel = new BasicRender(av);
-		initialise(panel);
-		return panel;
 	}
 }
 

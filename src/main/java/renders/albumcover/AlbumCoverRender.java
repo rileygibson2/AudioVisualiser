@@ -221,15 +221,8 @@ public class AlbumCoverRender extends Render {
 	public Painter getPainter() {return new AlbumCoverPainter(this);}
 
 	public AlbumCoverRender(Controller av) {
-		super(av, "Album Cover", 1450, 900);
+		super(av, "Album Cover");
 		setup();
-		addKeyListener(this);
-	}
-
-	public static AlbumCoverRender initialise(Controller av) {
-		AlbumCoverRender panel = new AlbumCoverRender(av);
-		initialise(panel);
-		return panel;
 	}
 }
 

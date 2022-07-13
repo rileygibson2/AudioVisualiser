@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -33,7 +32,9 @@ import main.java.renders.reflective.ReflectiveBlocksRender;
 
 public class Controller {
 
+	public RenderPanel rP;
 	protected List<Render> renders;
+	public Render currentRender;
 	private HashMap<String, Line.Info> ins = new HashMap<>();
 	protected boolean capture;
 
@@ -42,19 +43,20 @@ public class Controller {
 	private SourceDataLine speakerLine;
 
 	private final static int blockLength = 1024;
-	private float maxFrequency; //Maximum calculable frequency
-	private float measurementDuration; //Time in seconds that each sample measures
-	private float frequencyResolution;  //Frequency distance between each 'bucket'
 
 	public double[] magnitudes; //Real, uncut or averaged or modified magnitudes
 
 	public Controller() {
+		rP = RenderPanel.initialise(this, 1450, 900);
+		
 		renders = new ArrayList<Render>();
-		renders.add(BasicRender.initialise(this));
-		renders.add(AlbumCoverRender.initialise(this));
-		renders.add(ReflectiveBlocksRender.initialise(this));
-		renders.add(GreenBlocksRender.initialise(this));
-		renders.add(CircleRender.initialise(this));
+		renders.add(new BasicRender(this));
+		renders.add(new AlbumCoverRender(this));
+		renders.add(new ReflectiveBlocksRender(this));
+		renders.add(new GreenBlocksRender(this));
+		renders.add(new CircleRender(this));
+		
+		currentRender = null;
 
 		ControllerGUI.initialise(this);
 		this.capture = true;
@@ -74,11 +76,6 @@ public class Controller {
 			speakerLine = (SourceDataLine)AudioSystem.getLine(speakerInfo);
 			speakerLine.open(format);
 			speakerLine.start();
-
-			//Find information
-			maxFrequency = format.getSampleRate()/2;
-			measurementDuration = blockLength/format.getSampleRate();
-			frequencyResolution = format.getSampleRate()/blockLength;
 
 			//Read file
 			final byte[] buffer = new byte[blockLength];
@@ -148,7 +145,7 @@ public class Controller {
 		} catch (LineUnavailableException e) {throw new Error("Error creating input stream from microphone");}
 	}
 
-	private void initialise() {
+	/*private void initialise() {
 		AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 2, 4, 44100, false);
 		//format = new AudioFormat(8000.0f,8,1,true,false);
 
@@ -192,7 +189,7 @@ public class Controller {
 		catch(InterruptedException ie) { ie.printStackTrace();}
 		catch (LineUnavailableException e1) {System.out.println("Problem opening line");}
 
-	}
+	}*/
 
 	public TargetDataLine getTargetDataLine(String name) {
 		Line.Info lineInfo = null;

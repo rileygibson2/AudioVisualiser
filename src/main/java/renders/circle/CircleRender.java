@@ -12,10 +12,11 @@ import java.util.List;
 import java.util.Set;
 
 import main.java.core.Controller;
+import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
-public class CircleRender extends Render implements KeyListener {
+public class CircleRender extends Render {
 
 	//Buckets
 	private int radius, increments, xStart, yStart;
@@ -30,6 +31,8 @@ public class CircleRender extends Render implements KeyListener {
 	public final int maxAmp = 200; //Range of possible amplitudes for each bucket
 
 	List<Set<CircleParticle>> particles;
+	public boolean glow;
+	int color;
 
 	private void setup() {
 		radius = 200;
@@ -37,6 +40,12 @@ public class CircleRender extends Render implements KeyListener {
 		numBuckets = (radius/increments)+1;
 		xStart = (int) ((sW-radius*2)/2);
 		yStart = (int) ((sH-radius*2)/2)+radius;
+		color = -1;
+
+		//Add specialised button
+		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
+		buttons.add(new Button("Focus", Color.GREEN, Color.BLACK, "toggleGlow", "isGlow", false, this));
+		buttons.add(new Button("Color", new Color(252, 186, 3), null, "toggleColor", "cheatTrue", false, this));
 
 		/*
 		 * Make particles. Note that circle is split into four quandrants,
@@ -50,6 +59,19 @@ public class CircleRender extends Render implements KeyListener {
 			Set<CircleParticle> band = new HashSet<>();
 			for (int z=0; z<4; z++) band.add(new CircleParticle(i, this));
 			particles.add(band);
+		}
+		toggleColor();
+	}
+
+	public void toggleGlow() {if (windowVisible()) this.glow = !this.glow;}
+
+	public boolean isGlow() {return this.glow;}
+
+	public void toggleColor() {
+		color++;
+		if (color>=colors.length) color = 0;
+		for (Set<CircleParticle> bucket : particles) { //Update all the particles
+			for (CircleParticle p : bucket) p.setColor(colors[color][0], colors[color][1]);
 		}
 	}
 
@@ -115,7 +137,7 @@ public class CircleRender extends Render implements KeyListener {
 			//Find normal
 			for (int z=0; z<2; z++) { //Do twice, once inverted for top half
 				if (z==1) y = -y;
-				Point a1 = new Point(-400, (int) (((-400d-radius)/(x-radius))*y));
+				Point a1 = new Point(-500, (int) (((-400d-radius)/(x-radius))*y));
 				Point a2 = new Point(200, (int) (((200d-radius)/(x-radius))*y));
 
 				if (x>radius) { //Reflect with values after 1 radius
@@ -123,7 +145,8 @@ public class CircleRender extends Render implements KeyListener {
 					a2 = new Point(-a2.x+2*radius, -a2.y);
 				}
 
-				g.setColor(new Color(255, 0, 0, 25));
+				Color col = colors[color][2];
+				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), glow ? 10 : 15));
 				g.drawLine(xStart+a1.x, yStart+a1.y, xStart+a2.x, yStart+a2.y);
 			}
 		}
@@ -186,34 +209,23 @@ public class CircleRender extends Render implements KeyListener {
 		return new Point((int) nX, (int) nY);
 	}
 
-	@Override
-	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_B:
-			blackout = !blackout;
-			break;
-		}
-	}
-
 	public Painter getPainter() {return new ReflectivePainter(this);}
 
 	public CircleRender(Controller av) {
-		super(av, "Circle", 1450, 900);
+		super(av, "Circle");
 		setup();
-		addKeyListener(this);
 	}
-
-	public static CircleRender initialise(Controller av) {
-		CircleRender panel = new CircleRender(av);
-		initialise(panel);
-		return panel;
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {}
-
-	@Override
-	public void keyReleased(KeyEvent e) {}
+	
+	//0 is min, 1 is max, 2 is backdrop
+	Color[][] colors = {
+			{new Color(247, 205, 136), Color.WHITE, Color.WHITE},
+			{Color.RED, Color.WHITE, Color.RED},
+			{Color.GREEN, Color.WHITE, new Color(200, 255, 200)},
+			{Color.BLUE, Color.WHITE, Color.BLUE},
+			{new Color(255, 0, 255), Color.WHITE, new Color(255, 0, 200)},
+			{Color.WHITE, Color.WHITE, Color.WHITE},
+			{Color.RED, new Color(255, 100, 100), Color.RED}
+	};
 }
 
 class ReflectivePainter extends Painter {

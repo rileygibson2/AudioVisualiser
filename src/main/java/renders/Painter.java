@@ -21,7 +21,7 @@ public abstract class Painter extends Thread {
 			count++;
 			if (count>spacing) count = 0;
 			
-			render.repaint();//Paint
+			render.av.rP.repaint();//Paint
 			iterate(count); //Iterate
 			
 			//Increment strobe
@@ -37,7 +37,9 @@ public abstract class Painter extends Thread {
 				if (render.blackoutOp<0) render.blackoutOp = 0;
 			}
 		}
+		
 		System.out.println("Painter - Killing paint on "+render.getName());
+		render.av.rP.repaint(); //Trigger one last paint to make rP print black screen
 	};
 	
 	public abstract void iterate(int count);

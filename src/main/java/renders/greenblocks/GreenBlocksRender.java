@@ -14,7 +14,7 @@ import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
-public class GreenBlocksRender extends Render implements KeyListener {
+public class GreenBlocksRender extends Render {
 
 	//Buckets
 	List<GreenBucket> buckets;
@@ -115,35 +115,13 @@ public class GreenBlocksRender extends Render implements KeyListener {
 	
 	public void toggleInvert() {if (windowVisible()) inverted = !inverted;}
 	public boolean isInverted() {return inverted;}
-
-	@Override
-	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_B:
-			blackout = !blackout;
-			break;
-		}
-	}
 	
 	public Painter getPainter() {return new ReflectivePainter(this);}
 
 	public GreenBlocksRender(Controller av) {
-		super(av, "GreenBlocks", 1450, 900);
+		super(av, "GreenBlocks");
 		setup();
-		addKeyListener(this);
 	}
-
-	public static GreenBlocksRender initialise(Controller av) {
-		GreenBlocksRender panel = new GreenBlocksRender(av);
-		initialise(panel);
-		return panel;
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {}
-
-	@Override
-	public void keyReleased(KeyEvent e) {}
 }
 
 class ReflectivePainter extends Painter {
