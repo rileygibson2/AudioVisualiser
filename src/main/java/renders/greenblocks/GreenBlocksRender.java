@@ -42,6 +42,8 @@ public class GreenBlocksRender extends Render implements KeyListener {
 		visualMags = new double[numBuckets];
 		
 		//Add specialised button
+		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
+		buttons.add(new Button("W/S", Color.GREEN, Color.BLACK, "toggleWhiteStrobe", "isWhiteStrobing", true, this));
 		buttons.add(new Button("Invert", Color.GREEN, Color.BLACK, "toggleInvert", "isInverted", false, this));
 	}
 
@@ -99,9 +101,12 @@ public class GreenBlocksRender extends Render implements KeyListener {
 		int i = 0;
 		if (inverted) i = buckets.size()-1;
 		
+		Color override = null;
+		if (strobing&&whiteStrobe&&strobeOn) override = Color.WHITE;
+		
 		for (GreenBucket b : buckets) {
-			b.drawBucket(g, new Point((i*bucketW)+bucketXStart, bucketY)); //Draw left
-			b.drawBucket(g, new Point(sW-((i*bucketW)+bucketXStart), bucketY)); //Draw reflected right
+			b.drawBucket(g, new Point((i*bucketW)+bucketXStart, bucketY), override); //Draw left
+			b.drawBucket(g, new Point(sW-((i*bucketW)+bucketXStart), bucketY), override); //Draw reflected right
 			
 			if (inverted) i--;
 			else i++;

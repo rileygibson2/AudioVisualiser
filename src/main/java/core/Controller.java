@@ -27,6 +27,7 @@ import org.jtransforms.fft.DoubleFFT_1D;
 import main.java.renders.Render;
 import main.java.renders.albumcover.AlbumCoverRender;
 import main.java.renders.basic.BasicRender;
+import main.java.renders.circle.CircleRender;
 import main.java.renders.greenblocks.GreenBlocksRender;
 import main.java.renders.reflective.ReflectiveBlocksRender;
 
@@ -53,6 +54,7 @@ public class Controller {
 		renders.add(AlbumCoverRender.initialise(this));
 		renders.add(ReflectiveBlocksRender.initialise(this));
 		renders.add(GreenBlocksRender.initialise(this));
+		renders.add(CircleRender.initialise(this));
 
 		ControllerGUI.initialise(this);
 		this.capture = true;
@@ -233,5 +235,9 @@ public class Controller {
 
 	public static int random(double min, double max){
 		return (int) ((Math.random()*((max-min)+1))+min);
+	}
+	
+	public static double randomD(double min, double max){
+		return ((Math.random()*((max-min)+1))+min);
 	}
 }

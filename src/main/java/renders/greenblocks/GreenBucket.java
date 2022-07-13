@@ -38,9 +38,10 @@ public class GreenBucket {
 		else peakLife++;
 	}
 
-	public void drawBucket(Graphics2D g, Point pos) {
+	public void drawBucket(Graphics2D g, Point pos, Color override) {
 		int h = (int) (mag*10);
 		Color col = this.col.getColor();
+		if (override!=null) col = override;
 		
 		//Draw main gradient
 		for (int y=0; y<h; y++) {

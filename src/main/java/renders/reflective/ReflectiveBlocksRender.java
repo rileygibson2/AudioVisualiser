@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.java.core.Controller;
+import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
@@ -24,19 +25,23 @@ public class ReflectiveBlocksRender extends Render implements KeyListener {
 	int blackoutOp = 0;
 
 	//Magnitude formatting
-	public final int numBuckets = 15; //Number of spectrum buckets
+	public final int numBuckets = 18; //Number of spectrum buckets
 	public final int maxAmp = 40; //Range of possible amplitudes for each bucket
 
 	private void setup() {
 		bucketXStart = (int) (sW*0.1);
 		bucketW = (sW-(bucketXStart*2))/numBuckets;
 		bucketXOff = (int) (bucketW*0.1);
-		bucketY = (int) (sH*0.5);
+		bucketY = (int) (sH*0.6);
 
 		buckets = new ArrayList<ReflectiveBucket>();
 		for (int i=0; i<numBuckets; i++) buckets.add(new ReflectiveBucket(new Point(bucketXStart+(i*bucketW)+bucketXOff, bucketY), (int) (bucketW*0.8))); 
 
 		visualMags = new double[numBuckets];
+
+		//Add specialised button
+		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
+		buttons.add(new Button("W/S", Color.GREEN, Color.BLACK, "toggleWhiteStrobe", "isWhiteStrobing", true, this));
 	}
 
 	public void paint(Graphics2D g) {
@@ -93,7 +98,9 @@ public class ReflectiveBlocksRender extends Render implements KeyListener {
 	}
 
 	private void drawBlocks(Graphics2D g) {
-		for (ReflectiveBucket b : buckets) b.drawBucket(g);
+		Color override = null;
+		if (strobing&&whiteStrobe&&strobeOn) override = Color.WHITE;
+		for (ReflectiveBucket b : buckets) b.drawBucket(g, override);
 	}
 
 	@Override
@@ -104,7 +111,7 @@ public class ReflectiveBlocksRender extends Render implements KeyListener {
 			break;
 		}
 	}
-	
+
 	public Painter getPainter() {return new ReflectivePainter(this);}
 
 	public ReflectiveBlocksRender(Controller av) {

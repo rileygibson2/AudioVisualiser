@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -14,7 +16,7 @@ import javax.swing.JPanel;
 import main.java.renders.Button;
 import main.java.renders.Render;
 
-public class ControllerGUI extends JPanel implements MouseListener {
+public class ControllerGUI extends JPanel implements MouseListener, KeyListener {
 
 	static JFrame frame;
 	static int sW = 500;
@@ -31,6 +33,7 @@ public class ControllerGUI extends JPanel implements MouseListener {
 		setFocusable(true);
 		setFocusTraversalKeysEnabled(false);
 		addMouseListener(this);
+		addKeyListener(this);
 
 		rowStart = (int) (0.1*sH);
 		rowH = (int) (0.1*sH);
@@ -133,6 +136,38 @@ public class ControllerGUI extends JPanel implements MouseListener {
 		if (r!=null&&b!=null) b.toggleAction();
 		repaint();
 	}
+	
+	@Override
+	public void keyPressed(KeyEvent e) {
+		switch (e.getKeyCode()) {
+		case KeyEvent.VK_S : for (Render r : c.renders) if (r.windowVisible()) r.toggleBlackStrobe(); break;
+		case KeyEvent.VK_D : for (Render r : c.renders) if (r.windowVisible()) r.toggleWhiteStrobe();
+		}
+		repaint();
+	}
+
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		switch (e.getKeyCode()) {
+		case KeyEvent.VK_S :
+			for (Render r : c.renders) {
+				if (r.windowVisible()) {
+					r.toggleBlackStrobe();
+					if (r.isBlackStrobing()) r.toggleBlackStrobe();
+				}
+			}
+			break;
+		case KeyEvent.VK_D :
+			for (Render r : c.renders) {
+				if (r.windowVisible()) {
+					r.toggleWhiteStrobe();
+					if (r.isWhiteStrobing()) r.toggleWhiteStrobe();
+				}
+			}
+		}
+		repaint();
+	}
 
 	public static ControllerGUI initialise(Controller c) {
 		ControllerGUI panel = new ControllerGUI(c);
@@ -163,4 +198,7 @@ public class ControllerGUI extends JPanel implements MouseListener {
 
 	@Override
 	public void mouseExited(MouseEvent e) {}
+
+	@Override
+	public void keyTyped(KeyEvent e) {}
 }

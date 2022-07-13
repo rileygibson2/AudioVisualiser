@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import main.java.core.Controller;
+import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
@@ -45,6 +46,10 @@ public class AlbumCoverRender extends Render {
 		point = 0;
 		stars = new HashSet<Star>();
 		for (int i=0; i<numStars; i++) stars.add(new Star(starSpace, this));
+
+		//Add specialised button
+		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
+		buttons.add(new Button("W/S", Color.GREEN, Color.BLACK, "toggleWhiteStrobe", "isWhiteStrobing", true, this));
 	}
 
 	public void paint(Graphics2D g) {
@@ -196,6 +201,8 @@ public class AlbumCoverRender extends Render {
 
 		for (int i=0; i<buckets; i++) {
 			c = colorScroll((buckets-i)*30);
+			if (strobing&&whiteStrobe&&strobeOn) c = Color.WHITE;
+			
 			mag = visualMags[i];
 			g.setColor(c);
 			for (j=0; j<mag; j++) { //Draw full cells
@@ -210,7 +217,7 @@ public class AlbumCoverRender extends Render {
 			}
 		}
 	}
-	
+
 	public Painter getPainter() {return new AlbumCoverPainter(this);}
 
 	public AlbumCoverRender(Controller av) {

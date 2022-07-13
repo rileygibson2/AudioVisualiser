@@ -48,8 +48,6 @@ public abstract class Render extends JPanel implements KeyListener {
 		buttons = new ArrayList<Button>();
 		buttons.add(new Button("Visible", Color.GREEN, Color.RED, "toggleWindow", "windowVisible", false, this));
 		buttons.add(new Button("B/O", Color.RED, Color.BLACK, "toggleBlackout", "isBO", false, this));
-		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleStrobe", "isBlackStrobing", true, this));
-		buttons.add(new Button("W/S", Color.GREEN, Color.BLACK, "toggleWhiteStrobe", "isWhiteStrobing", true, this));
 	}
 
 	/*case BO: if (r.windowVisible()) r.toggleBlackout(); break;
@@ -72,16 +70,18 @@ public abstract class Render extends JPanel implements KeyListener {
 		painting = true;
 		Graphics2D g = (Graphics2D) g1d;
 
-		//Strobe
-		if (strobing&&strobeOn) {
-			if (whiteStrobe) g.setColor(Color.WHITE);
-			else g.setColor(Color.BLACK);
+		//Handle black strobe in on phase of strobe
+		if (strobing&&!whiteStrobe&&strobeOn) {
+			g.setColor(Color.BLACK);
 			g.fillRect(0, 0, sW, sH);
 		}
-		else if (!strobing||(strobing&&!strobeOn)) {
+		/* Below will paint when not strobing, or when it is black
+		 * strobing, but in an off phase of the strobe, or when strobing
+		 * but it's a white strobe (which is handled by render children).
+		 */
+		else if (!strobing||(strobing&&!strobeOn)||(strobing&&whiteStrobe)) {
 			paint(g);
-			//Blackout
-			if (blackoutOp>0) {
+			if (blackoutOp>0) { //Blackout
 				g.setColor(new Color(0, 0, 0, blackoutOp));
 				g.fillRect(0, 0, sW, sH);
 			}
@@ -117,7 +117,7 @@ public abstract class Render extends JPanel implements KeyListener {
 		}
 	}
 
-	public void toggleStrobe() {
+	public void toggleBlackStrobe() {
 		if (windowVisible()) {
 			this.strobing = !this.strobing;
 			this.whiteStrobe = false;

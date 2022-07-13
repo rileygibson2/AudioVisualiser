@@ -18,7 +18,7 @@ public class ReflectiveBucket {
 	private int peakLife;
 
 	private Col col, pCol;
-	private double rDim = 0.2; //Amount color is dimmed in reflection
+	private double rDim = 0.25; //Amount color is dimmed in reflection
 
 	public ReflectiveBucket(Point pos, int w) {
 		this.pos = pos;
@@ -41,9 +41,10 @@ public class ReflectiveBucket {
 		else peakLife++;
 	}
 
-	public void drawBucket(Graphics2D g) {
+	public void drawBucket(Graphics2D g, Color override) {
 		int h = (int) (mag*8);
 		Color col = this.col.getColor();
+		if (override!=null) col = override;
 		
 		//Draw main gradient
 		for (int y=0; y<h; y++) {
