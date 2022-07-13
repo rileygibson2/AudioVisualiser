@@ -30,19 +30,25 @@ public class CircleRender extends Render implements KeyListener {
 	public final int maxAmp = 200; //Range of possible amplitudes for each bucket
 
 	List<Set<CircleParticle>> particles;
-	
+
 	private void setup() {
 		radius = 200;
 		increments = 1;
-		numBuckets = (radius*2)/increments+1;
+		numBuckets = (radius/increments)+1;
 		xStart = (int) ((sW-radius*2)/2);
 		yStart = (int) ((sH-radius*2)/2)+radius;
-		
-		//Make particles
+
+		/*
+		 * Make particles. Note that circle is split into four quandrants,
+		 * each with mirrored actions. So there will be twice number of
+		 * particle buckets as there are actual freuqency buckets, and then
+		 * that one half will be mirrored above to make the top half of the
+		 * circle.
+		 */
 		particles = new ArrayList<Set<CircleParticle>>();
-		for (int i=0; i<numBuckets; i++) {
+		for (int i=0; i<numBuckets*2; i++) {
 			Set<CircleParticle> band = new HashSet<>();
-			for (int z=0; z<1; z++) band.add(new CircleParticle(i, this));
+			for (int z=0; z<4; z++) band.add(new CircleParticle(i, this));
 			particles.add(band);
 		}
 	}
@@ -65,11 +71,14 @@ public class CircleRender extends Render implements KeyListener {
 	public void incrementVisualMags(boolean increaseFall) {
 		//Cut unwanted frequencys and average into set number of buckets
 		if (av.magnitudes==null) return;
-		double realMags[] = cutandAverageMags(0, 800);
+		double realMags[] = cutandAverageMags(0, 201);
 
-		for (int i=0; i<numBuckets; i++) {
+		for (int i=0; i<particles.size(); i++) {
 			//Increment all the particles in this band
-			for (CircleParticle p : particles.get(i)) p.increment(realMags[i]);
+			for (CircleParticle p : particles.get(i)) {
+				if (i>radius) p.increment(realMags[(realMags.length)-(i-radius)]);
+				else p.increment(realMags[i]);
+			}
 		}
 	}
 
@@ -124,7 +133,7 @@ public class CircleRender extends Render implements KeyListener {
 		/*int i = 0;
 		for (int x=0; x<radius*2; x+=increments, i++) {
 			int y = (int) (Math.sqrt(Math.pow(radius, 2)-Math.pow((x-radius), 2)));
-			
+
 
 			for (int z=0; z<2; z++) { //Do twice, once inverted
 				if (z==1) y = -y;
@@ -142,11 +151,11 @@ public class CircleRender extends Render implements KeyListener {
 			}
 		}*/
 		g.setColor(new Color(255, 255, 255, 100));
-		g.drawOval(xStart, yStart-radius, radius*2, radius*2);
-		
+		//g.drawOval(xStart, yStart-radius, radius*2, radius*2);
+
 		//Draw all particles
 		for (Set<CircleParticle> band : particles) {
-			for(CircleParticle p : band) p.draw(g, xStart, yStart);
+			for (CircleParticle p : band) p.draw(g, xStart, yStart);
 		}
 	}
 
@@ -160,7 +169,7 @@ public class CircleRender extends Render implements KeyListener {
 	 * @return
 	 */
 	public Point getRealPosOnNormal(CircleParticle c, boolean inverted) {
-		int adj = ((radius*2)/numBuckets);
+		int adj = ((radius)/numBuckets);
 		if (adj<1) adj = 1;
 		int x = adj*c.bucket;
 		int y = (int) (Math.sqrt(Math.pow(radius, 2)-Math.pow((x-radius), 2)));
@@ -168,7 +177,7 @@ public class CircleRender extends Render implements KeyListener {
 		if (inverted) y = -y;
 
 		//c.mag = 0;
-		
+
 		//Find point on normal line
 		double nX = x-c.mag;
 		if (x>radius) nX = x+c.mag;
