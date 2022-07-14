@@ -25,10 +25,10 @@ import org.jtransforms.fft.DoubleFFT_1D;
 
 import main.java.renders.Render;
 import main.java.renders.albumcover.AlbumCoverRender;
+import main.java.renders.bars.BarsRender;
 import main.java.renders.basic.BasicRender;
 import main.java.renders.circle.CircleRender;
-import main.java.renders.greenblocks.GreenBlocksRender;
-import main.java.renders.reflective.ReflectiveBlocksRender;
+import main.java.renders.reflective.ReflectiveRender;
 
 public class Controller {
 
@@ -52,8 +52,8 @@ public class Controller {
 		renders = new ArrayList<Render>();
 		renders.add(new BasicRender(this));
 		renders.add(new AlbumCoverRender(this));
-		renders.add(new ReflectiveBlocksRender(this));
-		renders.add(new GreenBlocksRender(this));
+		renders.add(new ReflectiveRender(this));
+		renders.add(new BarsRender(this));
 		renders.add(new CircleRender(this));
 		
 		currentRender = null;

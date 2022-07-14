@@ -1,10 +1,8 @@
-package main.java.renders.reflective;
+package main.java.renders.streaks;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +11,11 @@ import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
-public class ReflectiveBlocksRender extends Render {
+public class Streaks extends Render {
 
 	//Buckets
-	List<ReflectiveBucket> buckets;
-	private int bucketXStart, bucketW, bucketXOff, bucketY;
+	List<StreaksBucket> buckets;
+	private int bucketXStart, bucketW, bucketY;
 	static final int curve = 12;
 
 	//Blackout
@@ -25,23 +23,16 @@ public class ReflectiveBlocksRender extends Render {
 	int blackoutOp = 0;
 
 	//Magnitude formatting
-	public final int numBuckets = 18; //Number of spectrum buckets
+	public final int numBuckets = 200; //Number of spectrum buckets
 	public final int maxAmp = 40; //Range of possible amplitudes for each bucket
 
 	private void setup() {
-		bucketXStart = (int) (sW*0.1);
-		bucketW = (sW-(bucketXStart*2))/numBuckets;
-		bucketXOff = (int) (bucketW*0.1);
-		bucketY = (int) (sH*0.6);
-
-		buckets = new ArrayList<ReflectiveBucket>();
-		for (int i=0; i<numBuckets; i++) buckets.add(new ReflectiveBucket(new Point(bucketXStart+(i*bucketW)+bucketXOff, bucketY), (int) (bucketW*0.8))); 
+		buckets = new ArrayList<StreaksBucket>();
+		for (int i=0; i<numBuckets; i++) buckets.add(new StreaksBucket((int) (bucketW*0.9), this)); 
 
 		visualMags = new double[numBuckets];
 
 		//Add specialised button
-		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
-		buttons.add(new Button("W/S", Color.GREEN, Color.BLACK, "toggleWhiteStrobe", "isWhiteStrobing", true, this));
 	}
 
 	public void paint(Graphics2D g) {
@@ -50,7 +41,7 @@ public class ReflectiveBlocksRender extends Render {
 		g.fillRect(0, 0, sW, sH);
 
 		//Elements
-		drawBlocks(g);
+		drawStreaks(g);
 	}
 
 	/**
@@ -59,9 +50,8 @@ public class ReflectiveBlocksRender extends Render {
 	 * but will jump with a low to high transition.
 	 */
 	public void incrementVisualMags(boolean increaseFall) {
-		//Cut unwanted frequencys and average into set number of buckets
 		if (av.magnitudes==null) return;
-		double realMags[] = cutandAverageMags(0, 100);
+		double realMags[] = cutandAverageMags(0, numBuckets);
 
 		for (int i=0; i<numBuckets; i++) {
 			if (increaseFall&&visualMags[i]>realMags[i]) visualMags[i]--;
@@ -73,10 +63,10 @@ public class ReflectiveBlocksRender extends Render {
 	}
 
 	public double[] cutandAverageMags(int mincut, int maxcut) {
+		//Cut unwanted frequencys and average into set number of buckets
 		if (mincut+maxcut>av.magnitudes.length||mincut<0||mincut>maxcut) throw new Error("Windowing error during cutting and averaging");
 		double[] averaged = new double[numBuckets];
 		double sum = 0;
-		int count = 0;
 		int bucketCut = (maxcut-mincut)/numBuckets;
 		int bucketCount = 1;
 
@@ -87,26 +77,22 @@ public class ReflectiveBlocksRender extends Render {
 				if ((sum)>maxAmp) averaged[bucketCount-1] = maxAmp;
 				else averaged[bucketCount-1] = sum;
 				sum = 0;
-				count = 0;
 				bucketCount++;
 			}
 
 			if (av.magnitudes[i]>0) sum += av.magnitudes[i];
-			count++;
 		}
 		return averaged;
 	}
 
-	private void drawBlocks(Graphics2D g) {
-		Color override = null;
-		if (strobing&&whiteStrobe&&strobeOn) override = Color.WHITE;
-		for (ReflectiveBucket b : buckets) b.drawBucket(g, override);
+	private void drawStreaks(Graphics2D g) {
+		
 	}
 
 	public Painter getPainter() {return new ReflectivePainter(this);}
 
-	public ReflectiveBlocksRender(Controller av) {
-		super(av, "ReflectiveBlocks");
+	public Streaks(Controller av) {
+		super(av, "Streaks");
 		setup();
 	}
 }
@@ -119,7 +105,7 @@ class ReflectivePainter extends Painter {
 
 	public void iterate(int count) {
 		//Increment
-		((ReflectiveBlocksRender) render).incrementVisualMags(true);
+		((Streaks) render).incrementVisualMags(true);
 	}
 
 }

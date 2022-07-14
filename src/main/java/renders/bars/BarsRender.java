@@ -1,4 +1,4 @@
-package main.java.renders.greenblocks;
+package main.java.renders.bars;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -11,10 +11,10 @@ import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
-public class GreenBlocksRender extends Render {
+public class BarsRender extends Render {
 
 	//Buckets
-	List<GreenBucket> buckets;
+	List<BarsBucket> buckets;
 	private int bucketXStart, bucketW, bucketY;
 	static final int curve = 12;
 
@@ -38,8 +38,8 @@ public class GreenBlocksRender extends Render {
 		bucketY = (int) (sH*0.5);
 		bucketXStart = sW/2-bucketW*numBuckets;
 
-		buckets = new ArrayList<GreenBucket>();
-		for (int i=0; i<numBuckets; i++) buckets.add(new GreenBucket((int) (bucketW*0.9), this)); 
+		buckets = new ArrayList<BarsBucket>();
+		for (int i=0; i<numBuckets; i++) buckets.add(new BarsBucket((int) (bucketW*0.9), this)); 
 
 		visualMags = new double[numBuckets];
 
@@ -108,7 +108,7 @@ public class GreenBlocksRender extends Render {
 		Color override = null;
 		if (strobing&&whiteStrobe&&strobeOn) override = Color.WHITE;
 
-		for (GreenBucket b : buckets) {
+		for (BarsBucket b : buckets) {
 			b.drawBucket(g, new Point((i*bucketW)+bucketXStart, bucketY), override); //Draw left
 			b.drawBucket(g, new Point(sW-((i*bucketW)+bucketXStart), bucketY), override); //Draw reflected right
 
@@ -134,8 +134,8 @@ public class GreenBlocksRender extends Render {
 
 	public Painter getPainter() {return new ReflectivePainter(this);}
 
-	public GreenBlocksRender(Controller av) {
-		super(av, "Green");
+	public BarsRender(Controller av) {
+		super(av, "Bars");
 		setup();
 	}
 }
@@ -148,7 +148,7 @@ class ReflectivePainter extends Painter {
 
 	public void iterate(int count) {
 		//Increment
-		((GreenBlocksRender) render).incrementVisualMags(true);
+		((BarsRender) render).incrementVisualMags(true);
 	}
 
 }

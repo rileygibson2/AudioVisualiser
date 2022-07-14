@@ -1,4 +1,4 @@
-package main.java.renders.greenblocks;
+package main.java.renders.bars;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -6,9 +6,9 @@ import java.awt.Point;
 
 import main.java.renders.Col;
 
-public class GreenBucket {
+public class BarsBucket {
 
-	private GreenBlocksRender r;
+	private BarsRender r;
 	private int w;
 	private double mag;
 
@@ -20,7 +20,7 @@ public class GreenBucket {
 	private Col col;
 	private double rDim = 0.2; //Amount color is dimmed in reflection
 
-	public GreenBucket(int w, GreenBlocksRender r) {
+	public BarsBucket(int w, BarsRender r) {
 		this.r = r;
 		this.w = w;
 		this.col = new Col(54, 247, 0);
