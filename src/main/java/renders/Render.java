@@ -17,8 +17,8 @@ import main.java.core.Controller;
 public abstract class Render {
 
 	protected Controller av;
-	protected int sW;
-	protected int sH;
+	public int sW;
+	public int sH;
 	protected Painter painter;
 	public boolean paint; //Kill switch for paint thread
 	protected boolean painting; //Whether a paint is currently occuring, used for synchronisation
