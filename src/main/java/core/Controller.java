@@ -33,6 +33,7 @@ import main.java.renders.streaks.StreaksRender;
 
 public class Controller {
 
+	public ControllerGUI gui;
 	public RenderPanel rP;
 	protected List<Render> renders;
 	public Render currentRender;
@@ -60,7 +61,7 @@ public class Controller {
 		
 		currentRender = null;
 
-		ControllerGUI.initialise(this);
+		gui = ControllerGUI.initialise(this);
 		this.capture = true;
 		runSpectro();
 	}

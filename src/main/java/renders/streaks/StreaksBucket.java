@@ -3,10 +3,10 @@ package main.java.renders.streaks;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.Arrays;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import main.java.core.Controller;
-import main.java.renders.Col;
 
 public class StreaksBucket {
 
@@ -17,8 +17,8 @@ public class StreaksBucket {
 	private int speed;
 	private Color col;
 
-	double buffer[]; //The buffer which allows values from the past to be displayed on the line
-	final int bufferSize = 200;
+	private double[] buffer; //The buffer which allows values from the past to be displayed on the line
+	private final int bufferSize = 200; //Max size of buffer
 
 	public StreaksBucket(int bucket, StreaksRender r) {
 		this.r = r;
@@ -26,9 +26,9 @@ public class StreaksBucket {
 		this.gradient = r.getGradient(bucket);
 		this.buffer = new double[bufferSize];
 		this.speed = Controller.random(1, 2);
-		setColor(new Color(100, 255, 100), Color.WHITE);
+		setColor(new Color(200, 200, 255), new Color(255, 255, 255));
 	}
-	
+
 	public void setColor(Color c1, Color c2) {
 		int r = Controller.random(c1.getRed(), c2.getRed());
 		int g = Controller.random(c1.getGreen(), c2.getGreen());
@@ -37,7 +37,10 @@ public class StreaksBucket {
 	}
 
 	public void updateMag(double mag) {
-		if (mag>this.mag) this.mag = mag;
+		//Change value
+		if (mag>this.mag) {
+			this.mag = mag;
+		}
 		else this.mag--;
 		if (this.mag<0) this.mag = 0;
 
@@ -50,29 +53,37 @@ public class StreaksBucket {
 		}
 	}
 
-	public void drawBucket(Graphics2D g) {
+
+
+	public void drawStreak(Graphics2D g) {
 		//Draw buffer
 		for (int i=0; i<bufferSize; i++) {
 			int x = r.sW-(i*(r.sW/bufferSize)); //Move along the line
+			x -= 50;
 			int y = r.getRealPositionOnLine(gradient, x);
-
+			y += 50;
+			int size = (int) getSize(x)+2;
 			int op = (int) buffer[i]*5;
 			if (op>255) op = 255;
-			g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
-
-			int size = (int) getSize(x)+2;
-			g.fillOval(x-(size/2), r.sH-y-(size/2), size, size);
-
+			
 			//Glow
-			if (op>80) op = 80;
-			for (int z=0; z<10; z++) {
-				op -= 10;
-				if (op<=0) break;
-				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
-
-				size = (int) getSize(x)+2+z;
-				g.fillOval(x-(size/2), r.sH-y-(size/2), size, size);
+			if (op>50) {
+				op /= 8;
+				for (int z=0; z<10; z++) {
+					op -= 1;
+					if (op<=0) break;
+					g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
+					size = (int) getSize(x)+2+z;
+					g.fillRect(x-(size/2), r.sH-y-(size/2), size, size);
+				}
 			}
+			
+			//Dot
+			op = (int) buffer[i]*5;
+			if (op>255) op = 255;
+			size = (int) getSize(x)+2;
+			g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
+			g.fillOval(x-(size/2), r.sH-y-(size/2), size, size);
 		}
 
 	}

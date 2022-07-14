@@ -199,13 +199,13 @@ public class CircleRender extends Render {
 	
 	//0 is min, 1 is max, 2 is backdrop
 	Color[][] colors = {
-			{new Color(247, 205, 136), Color.WHITE, Color.WHITE},
+			{Color.WHITE, Color.WHITE, Color.WHITE},
 			{Color.RED, Color.WHITE, Color.RED},
 			{Color.GREEN, Color.WHITE, new Color(200, 255, 200)},
 			{Color.BLUE, Color.WHITE, Color.BLUE},
 			{new Color(255, 0, 255), Color.WHITE, new Color(255, 0, 200)},
-			{Color.WHITE, Color.WHITE, Color.WHITE},
-			{Color.RED, new Color(255, 100, 100), Color.RED}
+			{Color.RED, new Color(255, 100, 100), Color.RED},
+			{new Color(247, 205, 136), Color.WHITE, Color.WHITE}
 	};
 }
 

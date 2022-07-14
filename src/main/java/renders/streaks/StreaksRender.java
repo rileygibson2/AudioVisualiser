@@ -130,7 +130,7 @@ public class StreaksRender extends Render {
 	}
 
 	private void drawStreaks(Graphics2D g) {
-		for (StreaksBucket b : buckets) b.drawBucket(g);
+		for (StreaksBucket b : buckets) b.drawStreak(g);
 	}
 
 	public Painter getPainter() {return new ReflectivePainter(this);}
