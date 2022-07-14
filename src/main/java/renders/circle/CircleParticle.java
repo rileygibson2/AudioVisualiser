@@ -44,7 +44,10 @@ public class CircleParticle {
 	}
 
 	public void increment(double mag) {
-		mag *= 4;
+		//Add the multipliers to different parts of the circle
+		if (bucket>160&&bucket<240) mag*=4;
+		else mag *= 8;
+		
 		if (this.mag<mag&&Math.abs(mag-this.mag)>3) { //Bump value up to mag
 			this.mag = mag;
 		}
@@ -56,10 +59,10 @@ public class CircleParticle {
 	}
 
 	public void draw(Graphics2D g, int xStart, int yStart) {
-		
+
 		for (int i=0; i<2; i++) { //Do twice, once mirrored
 			Point pos = r.getRealPosOnNormal(this, (i==0) ? false : true);
-			
+
 			if (mag>0) { //Dont draw dot at no magnitude position
 				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), opacity));
 				//Bottom half
@@ -69,13 +72,15 @@ public class CircleParticle {
 				}
 
 				if (!r.glow) {
-				g.fillOval((int) (xStart+pos.x-size/2), (int) (yStart+pos.y-size/2), size, size);
+					g.fillOval((int) (xStart+pos.x-size/2), (int) (yStart+pos.y-size/2), size, size);
 				}
 			}	
 			//Glow
-			g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), glowOpacity));
-			if (mag==0) g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), (glowOpacity-10<0) ? 5 : glowOpacity-10));
-			g.fillOval((int) (xStart+pos.x-glowSize/4), (int) (yStart+pos.y-glowSize/2), glowSize, glowSize);
+			if (mag>0||r.ring) {
+				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), glowOpacity));
+				if (mag==0) g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), (glowOpacity-10<0) ? 5 : glowOpacity-10));
+				g.fillOval((int) (xStart+pos.x-glowSize/4), (int) (yStart+pos.y-glowSize/2), glowSize, glowSize);
+			}
 		}
 	}
 }

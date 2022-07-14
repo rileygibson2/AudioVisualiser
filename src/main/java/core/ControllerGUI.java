@@ -19,7 +19,7 @@ import main.java.renders.Render;
 public class ControllerGUI extends JPanel implements MouseListener, KeyListener {
 
 	static JFrame frame;
-	static int sW = 500;
+	static int sW = 550;
 	static int sH = 700;
 
 	private Controller c;
@@ -92,12 +92,15 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 		y += (int) (rowH*0.1);
 
 		for (Button b : r.buttons) {
+			//Only show buttons that are not the visible button when the window is visible
+			if (!b.name.equals("Visible")&&!r.windowVisible()) continue;
+			
 			Color col = b.isOn() ? b.onCol : b.offCol;
-			x = (int) (sW-((sW*0.12)*c));
+			x = (int) (sW-((sW*0.11)*c));
 			g.setColor(col);
-			g.fillRoundRect((int) x, y, (int) (sW*0.1), (int) (rowH*0.8), 10, 10);
+			g.fillRoundRect((int) x, y, (int) (sW*0.09), (int) (rowH*0.8), 10, 10);
 			g.setColor(Color.WHITE);
-			g.drawRoundRect((int) x, y, (int) (sW*0.1), (int) (rowH*0.8), 10, 10);
+			g.drawRoundRect((int) x, y, (int) (sW*0.09), (int) (rowH*0.8), 10, 10);
 			g.drawString(b.name, (int) (x+sW*0.015), (int) (y+rowH*0.5));
 			c++;
 		}
@@ -109,7 +112,7 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 		Button b = null;
 		try {
 			r = c.renders.get((e.getY()-rowStart)/(rowH+rowOffset*2));
-			b = r.buttons.get((int) ((sW-e.getX())/(sW*0.12)));
+			b = r.buttons.get((int) ((sW-e.getX())/(sW*0.11)));
 		} catch (IndexOutOfBoundsException e1) {};
 
 		if (r!=null&&b!=null) {
@@ -130,7 +133,7 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 		Button b = null;
 		try {
 			r = c.renders.get((e.getY()-rowStart)/(rowH+rowOffset*2));
-			b = r.buttons.get((int) ((sW-e.getX())/(sW*0.12)));
+			b = r.buttons.get((int) ((sW-e.getX())/(sW*0.11)));
 		} catch (IndexOutOfBoundsException e1) {};
 
 		if (r!=null&&b!=null) b.toggleAction();
@@ -139,6 +142,7 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		if (c.currentRender==null) return;
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_Z : c.currentRender.toggleBlackStrobe(); break;
 		case KeyEvent.VK_X : c.currentRender.toggleWhiteStrobe(); break;
@@ -150,6 +154,7 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 
 	@Override
 	public void keyReleased(KeyEvent e) {
+		if (c.currentRender==null) return;
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_Z :
 			c.currentRender.toggleBlackStrobe();
@@ -159,7 +164,8 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 			c.currentRender.toggleWhiteStrobe();
 			if (c.currentRender.isWhiteStrobing()) c.currentRender.toggleWhiteStrobe();
 			break;
-		case KeyEvent.VK_SPACE : c.capture = true;
+		case KeyEvent.VK_SPACE : c.capture = true; break;
+		case KeyEvent.VK_B : c.currentRender.toggleBlackout();
 		}
 		repaint();
 	}

@@ -8,6 +8,7 @@ import main.java.renders.Col;
 
 public class GreenBucket {
 
+	private GreenBlocksRender r;
 	private int w;
 	private double mag;
 
@@ -19,7 +20,8 @@ public class GreenBucket {
 	private Col col;
 	private double rDim = 0.2; //Amount color is dimmed in reflection
 
-	public GreenBucket(int w) {
+	public GreenBucket(int w, GreenBlocksRender r) {
+		this.r = r;
 		this.w = w;
 		this.col = new Col(54, 247, 0);
 	}
@@ -42,7 +44,7 @@ public class GreenBucket {
 		int h = (int) (mag*10);
 		Color col = this.col.getColor();
 		if (override!=null) col = override;
-		
+
 		//Draw main gradient
 		for (int y=0; y<h; y++) {
 			int op = h-y;
@@ -50,8 +52,19 @@ public class GreenBucket {
 
 			g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
 			g.fillRect(pos.x, (pos.y-y), w, 1); //Main
-			//g.setColor(new Color((int) (col.getRed()*rDim), (int) (col.getGreen()*rDim), (int) (col.getBlue()*rDim), op));
 			g.fillRect(pos.x, pos.y+y, w, 1); //Reflection
+		}
+
+		//Draw white base
+		if (r.inner&&h>100) { //If bucket has a magnitude
+			for (int y=0; y<(h/5); y++) {
+				int op = (255/(h/5))*((h/5)-y);
+				op*=0.8;
+				if (op>255) op = 255; if (op<0) op = 0;
+				g.setColor(new Color(r.colors[r.color].getRed(), r.colors[r.color].getGreen(), r.colors[r.color].getBlue(), op));
+				g.fillRect(pos.x, (pos.y-y), w, 1); //Main
+				g.fillRect(pos.x, pos.y+y, w, 1); //Reflection
+			}
 		}
 	}
 }

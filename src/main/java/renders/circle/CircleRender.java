@@ -32,6 +32,7 @@ public class CircleRender extends Render {
 
 	List<Set<CircleParticle>> particles;
 	public boolean glow;
+	public boolean ring;
 	int color;
 
 	private void setup() {
@@ -41,10 +42,12 @@ public class CircleRender extends Render {
 		xStart = (int) ((sW-radius*2)/2);
 		yStart = (int) ((sH-radius*2)/2)+radius;
 		color = -1;
+		ring = true;
 
 		//Add specialised button
 		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
 		buttons.add(new Button("Focus", Color.GREEN, Color.BLACK, "toggleGlow", "isGlow", false, this));
+		buttons.add(new Button("Ring", Color.GREEN, Color.BLACK, "toggleRing", "isRing", false, this));
 		buttons.add(new Button("Color", new Color(252, 186, 3), null, "toggleColor", "cheatTrue", false, this));
 
 		/*
@@ -57,7 +60,7 @@ public class CircleRender extends Render {
 		particles = new ArrayList<Set<CircleParticle>>();
 		for (int i=0; i<numBuckets*2; i++) {
 			Set<CircleParticle> band = new HashSet<>();
-			for (int z=0; z<4; z++) band.add(new CircleParticle(i, this));
+			for (int z=0; z<8; z++) band.add(new CircleParticle(i, this));
 			particles.add(band);
 		}
 		toggleColor();
@@ -66,6 +69,10 @@ public class CircleRender extends Render {
 	public void toggleGlow() {if (windowVisible()) this.glow = !this.glow;}
 
 	public boolean isGlow() {return this.glow;}
+	
+	public void toggleRing() {if (windowVisible()) this.ring = !this.ring;}
+
+	public boolean isRing() {return this.ring;}
 
 	public void toggleColor() {
 		color++;
@@ -153,29 +160,6 @@ public class CircleRender extends Render {
 	}
 
 	private void drawCircle(Graphics2D g) {
-		/*int i = 0;
-		for (int x=0; x<radius*2; x+=increments, i++) {
-			int y = (int) (Math.sqrt(Math.pow(radius, 2)-Math.pow((x-radius), 2)));
-
-
-			for (int z=0; z<2; z++) { //Do twice, once inverted
-				if (z==1) y = -y;
-
-				double am = visualMags[i]*3;
-				//if (z==1) am = visualMags[visualMags.length-1-i]*3;
-
-				//Find point on normal line
-				double nX = x-am;
-				if (x>radius) nX = x+am;
-				double nY = ((nX-radius)/(x-radius))*y;
-
-				g.setColor(Color.PINK);
-				g.fillOval((int) (xStart+nX-1), (int) (yStart+nY-1), 2, 2);
-			}
-		}*/
-		g.setColor(new Color(255, 255, 255, 100));
-		//g.drawOval(xStart, yStart-radius, radius*2, radius*2);
-
 		//Draw all particles
 		for (Set<CircleParticle> band : particles) {
 			for (CircleParticle p : band) p.draw(g, xStart, yStart);
@@ -196,11 +180,8 @@ public class CircleRender extends Render {
 		if (adj<1) adj = 1;
 		int x = adj*c.bucket;
 		int y = (int) (Math.sqrt(Math.pow(radius, 2)-Math.pow((x-radius), 2)));
-
 		if (inverted) y = -y;
-
-		//c.mag = 0;
-
+		
 		//Find point on normal line
 		double nX = x-c.mag;
 		if (x>radius) nX = x+c.mag;
