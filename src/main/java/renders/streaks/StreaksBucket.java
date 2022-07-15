@@ -12,7 +12,6 @@ public class StreaksBucket {
 
 	private StreaksRender r;
 	private double mag;
-	private int bucket;
 	private double gradient;
 	private int speed;
 	private Color col;
@@ -22,7 +21,6 @@ public class StreaksBucket {
 
 	public StreaksBucket(int bucket, StreaksRender r) {
 		this.r = r;
-		this.bucket = bucket;
 		this.gradient = r.getGradient(bucket);
 		this.buffer = new double[bufferSize];
 		this.speed = Controller.random(1, 2);
@@ -44,6 +42,10 @@ public class StreaksBucket {
 		else this.mag--;
 		if (this.mag<0) this.mag = 0;
 
+		//Check speed
+		int speed = this.speed;
+		if (r.rushSpeed) speed *= 8;
+		
 		//Update buffer
 		for (int z=0; z<speed; z++) { //Do multiple for different speeds
 			for (int i=bufferSize-2; i>=0; i--) {
@@ -53,14 +55,15 @@ public class StreaksBucket {
 		}
 	}
 
-
-
 	public void drawStreak(Graphics2D g) {
+		//Allow for a randomised white strobe
+		if (r.isWhiteStrobing()&&Controller.random(0, 20)!=0) return;
+		
 		//Draw buffer
 		for (int i=0; i<bufferSize; i++) {
-			int x = r.sW-(i*(r.sW/bufferSize)); //Move along the line
-			x -= 50;
-			int y = r.getRealPositionOnLine(gradient, x);
+			
+			double x = r.sW-(i*((double) r.sW/bufferSize)); //Move along the line
+			int y = r.getRealPositionOnLine(gradient, (int) x);
 			y += 50;
 			int size = (int) getSize(x)+2;
 			int op = (int) buffer[i]*5;
@@ -74,7 +77,7 @@ public class StreaksBucket {
 					if (op<=0) break;
 					g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
 					size = (int) getSize(x)+2+z;
-					g.fillRect(x-(size/2), r.sH-y-(size/2), size, size);
+					g.fillRect((int) x-(size/2), r.sH-y-(size/2), size, size);
 				}
 			}
 			
@@ -83,7 +86,7 @@ public class StreaksBucket {
 			if (op>255) op = 255;
 			size = (int) getSize(x)+2;
 			g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
-			g.fillOval(x-(size/2), r.sH-y-(size/2), size, size);
+			g.fillOval((int) x-(size/2), r.sH-y-(size/2), size, size);
 		}
 
 	}

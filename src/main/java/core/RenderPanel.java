@@ -3,8 +3,11 @@ package main.java.core;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Arrays;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -48,6 +51,7 @@ public class RenderPanel extends JPanel implements KeyListener {
 				panel.frame = new JFrame();
 				panel.setPreferredSize(new Dimension(sW, sH));
 				panel.frame.getContentPane().add(panel);
+				//panel.frame.setUndecorated(true);
 
 				//Label and build
 				panel.frame.setTitle("Render");
@@ -56,6 +60,9 @@ public class RenderPanel extends JPanel implements KeyListener {
 				//Finish up
 				panel.frame.setVisible(true);
 				panel.frame.pack();
+				
+				//GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+				//gd.setFullScreenWindow(panel.frame);
 			}
 		});
 

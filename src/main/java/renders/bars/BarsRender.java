@@ -27,7 +27,7 @@ public class BarsRender extends Render {
 	public final int maxAmp = 40; //Range of possible amplitudes for each bucket
 
 	private boolean inverted = false;
-	public boolean inner = false;
+	public boolean inner = true;
 	public int color;
 
 	public Color colors[] = {new Color(255, 255, 0), new Color(255, 255, 255)};

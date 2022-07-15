@@ -52,7 +52,7 @@ public class ReflectiveBucket {
 			if (op>255) op = 255; if (op<0) op = 0;
 
 			g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
-			g.fillRect(pos.x, (pos.y-y), w, 1); //Main
+			g.fillRect(pos.x, pos.y-y, w, 1); //Main
 			g.setColor(new Color((int) (col.getRed()*rDim), (int) (col.getGreen()*rDim), (int) (col.getBlue()*rDim), op));
 			g.fillRect(pos.x, pos.y+y, w, 1); //Reflection
 		}

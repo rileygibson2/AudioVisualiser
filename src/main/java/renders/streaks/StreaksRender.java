@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import main.java.core.Controller;
+import main.java.renders.Button;
 import main.java.renders.Painter;
 import main.java.renders.Render;
 
@@ -27,6 +28,7 @@ public class StreaksRender extends Render {
 	public Integer[] bucketShuffle; //Used to randomise which visual bucket an amplitude bucket is sent too.
 
 	public Point origin;
+	public boolean rushSpeed;
 
 	private void setup() {
 		origin = new Point((int) (sW+(0.16*sW)), sH);
@@ -41,6 +43,9 @@ public class StreaksRender extends Render {
 		list.toArray(bucketShuffle);
 
 		//Add specialised button
+		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
+		buttons.add(new Button("W/S", Color.GREEN, Color.BLACK, "toggleWhiteStrobe", "isWhiteStrobing", true, this));
+		buttons.add(new Button("Speed", Color.GREEN, Color.BLACK, "toggleRushSpeed", "isRushSpeed", true, this));
 	}
 
 	public void paint(Graphics2D g) {
@@ -132,7 +137,11 @@ public class StreaksRender extends Render {
 	private void drawStreaks(Graphics2D g) {
 		for (StreaksBucket b : buckets) b.drawStreak(g);
 	}
+	
+	public void toggleRushSpeed() {if (windowVisible()) this.rushSpeed = !this.rushSpeed;}
 
+	public boolean isRushSpeed() {return this.rushSpeed;}
+	
 	public Painter getPainter() {return new ReflectivePainter(this);}
 
 	public StreaksRender(Controller av) {

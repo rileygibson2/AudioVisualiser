@@ -29,6 +29,7 @@ import main.java.renders.bars.BarsRender;
 import main.java.renders.basic.BasicRender;
 import main.java.renders.circle.CircleRender;
 import main.java.renders.reflective.ReflectiveRender;
+import main.java.renders.smallbar.SmallBarRender;
 import main.java.renders.streaks.StreaksRender;
 
 public class Controller {
@@ -58,6 +59,7 @@ public class Controller {
 		renders.add(new BarsRender(this));
 		renders.add(new CircleRender(this));
 		renders.add(new StreaksRender(this));
+		renders.add(new SmallBarRender(this));
 		
 		currentRender = null;
 
@@ -117,7 +119,7 @@ public class Controller {
 				ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
 
 		double[] samples = new double[buffer.length * 8 / bits];
-		for(int i = 0; i < samples.length; ++i) {
+		for(int i=0; i<samples.length; ++i) {
 			switch(bits) {
 			case 8:  samples[i] = ( bb.get()      / max ); break;
 			case 16: samples[i] = ( bb.getShort() / max ); break;

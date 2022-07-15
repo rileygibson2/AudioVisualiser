@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -151,7 +153,6 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 		repaint();
 	}
 
-
 	@Override
 	public void keyReleased(KeyEvent e) {
 		if (c.currentRender==null) return;
@@ -165,7 +166,11 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 			if (c.currentRender.isWhiteStrobing()) c.currentRender.toggleWhiteStrobe();
 			break;
 		case KeyEvent.VK_SPACE : c.capture = true; break;
-		case KeyEvent.VK_B : c.currentRender.toggleBlackout();
+		case KeyEvent.VK_B : c.currentRender.toggleBlackout(); break;
+		case KeyEvent.VK_F : 
+			GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+			if (gd.getFullScreenWindow()==c.rP.frame) gd.setFullScreenWindow(null);
+			else gd.setFullScreenWindow(c.rP.frame);
 		}
 		repaint();
 	}
@@ -175,7 +180,7 @@ public class ControllerGUI extends JPanel implements MouseListener, KeyListener 
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				frame = new JFrame();
-				frame.setAlwaysOnTop(true);
+				//frame.setAlwaysOnTop(true);
 				panel.setPreferredSize(new Dimension(sW, panel.rowStart+c.renders.size()*(panel.rowH+panel.rowOffset*2)));
 				frame.getContentPane().add(panel);
 
