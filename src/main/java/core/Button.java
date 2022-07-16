@@ -1,4 +1,4 @@
-package main.java.renders;
+package main.java.core;
 
 import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;

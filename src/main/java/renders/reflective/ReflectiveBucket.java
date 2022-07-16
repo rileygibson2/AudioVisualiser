@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 
-import main.java.renders.Col;
+import main.java.core.Col;
 
 public class ReflectiveBucket {
 

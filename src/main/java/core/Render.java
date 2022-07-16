@@ -1,4 +1,4 @@
-package main.java.renders;
+package main.java.core;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,8 +11,6 @@ import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import main.java.core.Controller;
 
 public abstract class Render {
 

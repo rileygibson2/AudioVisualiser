@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 
+import main.java.core.Col;
 import main.java.core.Controller;
-import main.java.renders.Col;
 
 public class SmallBarBucket {
 
@@ -15,10 +15,11 @@ public class SmallBarBucket {
 	private Color col;
 	private int lowest = 30; //Lowest mag a bucket can have
 
-	public SmallBarBucket(Point pos, int w) {
+	public SmallBarBucket(Point pos, int w, Color col) {
 		this.pos = pos;
 		this.w = w;
-		setColor(new Color(0, 100, 255), new Color(100, 255, 255));
+		this.col = col;
+		//setColor(new Color(0, 100, 255), new Color(100, 255, 255));
 	}
 	
 	public void setColor(Color c1, Color c2) {
@@ -37,7 +38,7 @@ public class SmallBarBucket {
 		if (override!=null) col = override;
 		g.setColor(col);
 		
-		g.fillRoundRect(pos.x, pos.y-h, w, h*2, 60, 60); //Bucket
+		g.fillRoundRect(pos.x, pos.y-h, w, h*2, 65, 65); //Bucket
 
 	}
 }

@@ -3,16 +3,12 @@ package main.java.renders.smallbar;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import main.java.core.Controller;
-import main.java.renders.Button;
-import main.java.renders.Painter;
-import main.java.renders.Render;
+import main.java.core.Painter;
+import main.java.core.Render;
 
 public class SmallBarRender extends Render {
 
@@ -26,18 +22,28 @@ public class SmallBarRender extends Render {
 	int blackoutOp = 0;
 
 	//Magnitude formatting
-	public final int numBuckets = 6; //Number of spectrum buckets
+	public final int numBuckets = 7; //Number of spectrum buckets
 	public final int maxAmp = 250; //Range of possible amplitudes for each bucket
 
+	private final Color colors[] = {
+			new Color(216, 200, 32),
+			new Color(37, 184, 204),
+			new Color(37, 203, 129),
+			new Color(227, 224, 223),
+			new Color(158, 46, 53),
+			new Color(220, 159, 30),
+			new Color(23, 44, 160)
+	};
+	
 	private void setup() {
-		bucketXStart = (int) (sW*0.35);
+		bucketXStart = (int) (sW*0.31);
 		bucketW = (sW-(bucketXStart*2))/numBuckets;
 		bucketXOff = (int) (bucketW*0.08);
 		bucketW -= bucketXOff*2;
 		bucketY = (int) (sH*0.5);
 
 		buckets = new ArrayList<SmallBarBucket>();
-		for (int i=0; i<numBuckets; i++) buckets.add(new SmallBarBucket(new Point(bucketXStart+(i*(bucketW+bucketXOff*2)), bucketY), bucketW)); 
+		for (int i=0; i<numBuckets; i++) buckets.add(new SmallBarBucket(new Point(bucketXStart+(i*(bucketW+bucketXOff*2)), bucketY), bucketW, colors[i])); 
 
 		visualMags = new double[numBuckets];
 
@@ -63,7 +69,7 @@ public class SmallBarRender extends Render {
 	public void incrementVisualMags(boolean increaseFall) {
 		//Cut unwanted frequencys and average into set number of buckets
 		if (av.magnitudes==null) return;
-		double realMags[] = cutandAverageMags(0, 900);
+		double realMags[] = cutandAverageMags(0, 100);
 
 		for (int i=0; i<numBuckets; i++) {
 			if (increaseFall&&visualMags[i]>realMags[i]) visualMags[i]-=4;
@@ -80,33 +86,24 @@ public class SmallBarRender extends Render {
 		if (mincut+maxcut>av.magnitudes.length||mincut<0||mincut>maxcut) throw new Error("Windowing error during cutting and averaging");
 		double[] averaged = new double[numBuckets];
 		double sum = 0;
-		int count = 0;
-		int bucketCut = (maxcut-mincut)/numBuckets;
-		int bucketCount = 1;
+		int bucketCut = (maxcut-mincut)/(numBuckets+1);
+		int bucketCount = 0;
 
 		for (int i=mincut; i<maxcut; i++) {
-			if (i==mincut+(bucketCount*bucketCut)) {
+			if (i>=mincut+((bucketCount+1)*bucketCut)) {
 				if (bucketCount>=numBuckets) break;
 				
-				if ((sum*6)>maxAmp) {
-					if (bucketCount==1) averaged[bucketCount-1] = maxAmp*0.8;
-					else averaged[bucketCount-1] = maxAmp;
-				}
-				else {
-					if (bucketCount==1) averaged[bucketCount-1] = sum;
-					else averaged[bucketCount-1] = sum*6;
-				}
+				if (bucketCount==0) averaged[bucketCount] = sum;
+				else averaged[bucketCount] = sum*6;
+				if (averaged[bucketCount]>maxAmp) averaged[bucketCount] = maxAmp; 
 				
 				sum = 0;
-				count = 0;
 				bucketCount++;
 			}
 
 			if (av.magnitudes[i]>0) sum += av.magnitudes[i];
-			count++;
 		}
 		
-		System.out.println(Arrays.toString(averaged));
 		return averaged;
 	}
 

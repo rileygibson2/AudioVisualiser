@@ -11,10 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import main.java.core.Button;
 import main.java.core.Controller;
-import main.java.renders.Button;
-import main.java.renders.Painter;
-import main.java.renders.Render;
+import main.java.core.Painter;
+import main.java.core.Render;
 
 public class CircleRender extends Render {
 
@@ -31,9 +31,10 @@ public class CircleRender extends Render {
 	public final int maxAmp = 200; //Range of possible amplitudes for each bucket
 
 	List<Set<CircleParticle>> particles;
-	public boolean glow;
+	public boolean unfocused;
 	public boolean ring;
 	int color;
+	int thickness; //Thickness of present particles
 
 	private void setup() {
 		radius = 200;
@@ -41,34 +42,46 @@ public class CircleRender extends Render {
 		numBuckets = (radius/increments)+1;
 		xStart = (int) ((sW-radius*2)/2);
 		yStart = (int) ((sH-radius*2)/2)+radius;
-		color = -1;
+		color = 0;
 		ring = true;
+		thickness = 1;
+		makeParticles();
 
 		//Add specialised button
 		buttons.add(new Button("B/S", Color.GREEN, Color.BLACK, "toggleBlackStrobe", "isBlackStrobing", true, this));
-		buttons.add(new Button("Focus", Color.GREEN, Color.BLACK, "toggleGlow", "isGlow", false, this));
+		buttons.add(new Button("Focus", Color.GREEN, Color.BLACK, "toggleFocus", "isUnfocused", false, this));
 		buttons.add(new Button("Ring", Color.GREEN, Color.BLACK, "toggleRing", "isRing", false, this));
+		buttons.add(new Button("Thick", new Color(252, 186, 3), null, "toggleThickness", "cheatTrue", false, this));
 		buttons.add(new Button("Color", new Color(252, 186, 3), null, "toggleColor", "cheatTrue", false, this));
-
-		/*
-		 * Make particles. Note that circle is split into four quandrants,
-		 * each with mirrored actions. So there will be twice number of
-		 * particle buckets as there are actual freuqency buckets, and then
-		 * that one half will be mirrored above to make the top half of the
-		 * circle.
-		 */
+	}
+	
+	/**
+	 * Make particles. Note that circle is split into four quandrants,
+	 * each with mirrored actions. So there will be twice number of
+	 * particle buckets as there are actual freuqency buckets, and then
+	 * that one half will be mirrored above to make the top half of the
+	 * circle.
+	 */
+	public void makeParticles() {
 		particles = new ArrayList<Set<CircleParticle>>();
 		for (int i=0; i<numBuckets*2; i++) {
 			Set<CircleParticle> band = new HashSet<>();
-			for (int z=0; z<8; z++) band.add(new CircleParticle(i, this));
+			for (int z=0; z<8*thickness; z++) band.add(new CircleParticle(i, this));
 			particles.add(band);
 		}
-		toggleColor();
+		updateColors();
+	}
+	
+	public void updateColors() {
+		//Update all the particles
+		for (Set<CircleParticle> bucket : particles) {
+			for (CircleParticle p : bucket) p.setColor(colors[color][0], colors[color][1]);
+		}
 	}
 
-	public void toggleGlow() {if (windowVisible()) this.glow = !this.glow;}
+	public void toggleFocus() {if (windowVisible()) this.unfocused = !this.unfocused;}
 
-	public boolean isGlow() {return this.glow;}
+	public boolean isUnfocused() {return this.unfocused;}
 	
 	public void toggleRing() {if (windowVisible()) this.ring = !this.ring;}
 
@@ -77,9 +90,13 @@ public class CircleRender extends Render {
 	public void toggleColor() {
 		color++;
 		if (color>=colors.length) color = 0;
-		for (Set<CircleParticle> bucket : particles) { //Update all the particles
-			for (CircleParticle p : bucket) p.setColor(colors[color][0], colors[color][1]);
-		}
+		updateColors();
+	}
+	
+	public void toggleThickness() {
+		thickness++;
+		if (thickness>4) thickness = 1;
+		makeParticles();
 	}
 
 	public void paint(Graphics2D g) {
@@ -153,7 +170,7 @@ public class CircleRender extends Render {
 				}
 
 				Color col = colors[color][2];
-				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), glow ? 10 : 15));
+				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), unfocused ? 10 : 15));
 				g.drawLine(xStart+a1.x, yStart+a1.y, xStart+a2.x, yStart+a2.y);
 			}
 		}

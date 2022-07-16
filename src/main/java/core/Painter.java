@@ -1,4 +1,4 @@
-package main.java.renders;
+package main.java.core;
 
 public abstract class Painter extends Thread {
 	protected Render render;

@@ -6,10 +6,10 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.java.core.Button;
 import main.java.core.Controller;
-import main.java.renders.Button;
-import main.java.renders.Painter;
-import main.java.renders.Render;
+import main.java.core.Painter;
+import main.java.core.Render;
 
 public class BarsRender extends Render {
 

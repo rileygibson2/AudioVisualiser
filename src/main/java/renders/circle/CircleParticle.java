@@ -16,8 +16,9 @@ public class CircleParticle {
 	Point diff; //Difference from actual point on band
 
 	Color col;
-	int opacity;
-	int glowOpacity;
+	int opacity; //Opacity of particle
+	int glowOpacity; //Opacity of glow around particle
+	int fadeOutOp; //Extra opacity to allow particle to fade out at 0 mag position
 
 	//Statics
 	static int diffSize = 20;
@@ -50,30 +51,28 @@ public class CircleParticle {
 		
 		if (this.mag<mag&&Math.abs(mag-this.mag)>3) { //Bump value up to mag
 			this.mag = mag;
+			fadeOutOp = opacity;
 		}
 		else { //Fall the particle
 			this.mag -= speed;
 		}
 
 		if (this.mag<0) this.mag = 0;
+		if (this.mag==0) fadeOutOp -= 20;
 	}
-
+	
 	public void draw(Graphics2D g, int xStart, int yStart) {
-
 		for (int i=0; i<2; i++) { //Do twice, once mirrored
 			Point pos = r.getRealPosOnNormal(this, (i==0) ? false : true);
-
-			if (mag>0) { //Dont draw dot at no magnitude position
-				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), opacity));
-				//Bottom half
-				if (mag>0) { //Add random position adjustment for texture
-					pos.x += diff.x;
-					pos.y += diff.y;
-				}
-
-				if (!r.glow) {
-					g.fillOval((int) (xStart+pos.x-size/2), (int) (yStart+pos.y-size/2), size, size);
-				}
+			int op = opacity;
+			
+			if (mag>0||fadeOutOp>0) { //Don't draw dot at no magnitude position (except when fading out)
+				if (mag==0) op = fadeOutOp;
+				g.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), op));
+				
+				//Adding position adjustment
+				pos.x += diff.x; pos.y += diff.y;
+				if (!r.unfocused) g.fillOval((int) (xStart+pos.x-size/2), (int) (yStart+pos.y-size/2), size, size);
 			}	
 			//Glow
 			if (mag>0||r.ring) {

@@ -24,7 +24,12 @@ public class StreaksBucket {
 		this.gradient = r.getGradient(bucket);
 		this.buffer = new double[bufferSize];
 		this.speed = Controller.random(1, 2);
-		setColor(new Color(200, 200, 255), new Color(255, 255, 255));
+		setColor();
+	}
+	
+	public void setColor() {
+		setColor(new Color(0, 250, 0), new Color(200, 255, 0));
+		if (Controller.random(1, 4)==1) setColor(new Color(250, 255, 230), new Color(255, 255, 255));
 	}
 
 	public void setColor(Color c1, Color c2) {
@@ -53,6 +58,8 @@ public class StreaksBucket {
 				if (i==0) buffer[i] = this.mag; //Add new value
 			}
 		}
+		
+		if (Controller.random(0, 1000)==0) setColor();
 	}
 
 	public void drawStreak(Graphics2D g) {
@@ -71,7 +78,7 @@ public class StreaksBucket {
 			
 			//Glow
 			if (op>50) {
-				op /= 8;
+				op /= 10;
 				for (int z=0; z<10; z++) {
 					op -= 1;
 					if (op<=0) break;

@@ -15,9 +15,6 @@ import java.awt.event.MouseListener;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import main.java.renders.Button;
-import main.java.renders.Render;
-
 public class ControllerGUI extends JPanel implements MouseListener, KeyListener {
 
 	static JFrame frame;

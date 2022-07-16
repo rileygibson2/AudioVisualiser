@@ -31,7 +31,7 @@ public class RenderPanel extends JPanel implements KeyListener {
 	@Override
 	public void paintComponent(Graphics g1d) {
 		if (av.currentRender==null) {
-			g1d.setColor(Color.RED);
+			g1d.setColor(Color.BLACK);
 			g1d.fillRect(0, 0, sW, sH);
 		}
 		else av.currentRender.paint(g1d);

@@ -6,10 +6,10 @@ import java.awt.Rectangle;
 import java.util.HashSet;
 import java.util.Set;
 
+import main.java.core.Button;
 import main.java.core.Controller;
-import main.java.renders.Button;
-import main.java.renders.Painter;
-import main.java.renders.Render;
+import main.java.core.Painter;
+import main.java.core.Render;
 
 public class AlbumCoverRender extends Render {
 
@@ -28,12 +28,12 @@ public class AlbumCoverRender extends Render {
 	private Rectangle starSpace = new Rectangle(0, (int) (sH*0.4), sW, sH); //Bounds for stars
 
 	//Magnitude formatting
-	public final int buckets = 21; //Number of spectrum buckets
+	public final int numBuckets = 21; //Number of spectrum buckets
 	public final int maxAmp = 45; //Range of possible amplitudes for each bucket
 
 	private void setup() {
 		ceiling = (int) (sH*0.8);
-		cellW = sW/buckets;
+		cellW = sW/numBuckets;
 		cellXOff = (int) (cellW*0.1);
 		cellW = (int) (cellW*0.8);
 
@@ -41,7 +41,7 @@ public class AlbumCoverRender extends Render {
 		cellYOff = (int) (cellH*0.15);
 		cellH = (int) (cellH*0.7);
 
-		visualMags = new double[buckets];
+		visualMags = new double[numBuckets];
 		stage = 1;
 		point = 0;
 		stars = new HashSet<Star>();
@@ -80,7 +80,7 @@ public class AlbumCoverRender extends Render {
 		if (av.magnitudes==null) return;
 		double realMags[] = cutandAverageMags(0, 100);
 
-		for (int i=0; i<buckets; i++) {
+		for (int i=0; i<numBuckets; i++) {
 			if (increaseFall&&visualMags[i]>realMags[i]) visualMags[i]--;
 			if (visualMags[i]<realMags[i]) visualMags[i] = realMags[i];
 		}
@@ -88,18 +88,18 @@ public class AlbumCoverRender extends Render {
 
 	public double[] cutandAverageMags(int mincut, int maxcut) {
 		if (mincut+maxcut>av.magnitudes.length||mincut<0||mincut>maxcut) throw new Error("Windowing error during cutting and averaging");
-		double[] averaged = new double[buckets];
+		double[] averaged = new double[numBuckets];
 		double sum = 0;
 		int count = 0;
-		int bucketCut = (maxcut-mincut)/buckets;
-		int bucketCount = 1;
+		int bucketCut = (maxcut-mincut)/(numBuckets+1);
+		int bucketCount = 0;
 
 		for (int i=mincut; i<maxcut; i++) {
-			if (i==mincut+(bucketCount*bucketCut)) {
-				if (bucketCount>=buckets) break;
+			if (i==mincut+((bucketCount+1)*bucketCut)) {
+				if (bucketCount>=numBuckets) break;
 
-				if ((sum)>maxAmp) averaged[bucketCount-1] = maxAmp;
-				else averaged[bucketCount-1] = sum;
+				if ((sum)>maxAmp) averaged[bucketCount] = maxAmp;
+				else averaged[bucketCount] = sum;
 				sum = 0;
 				count = 0;
 				bucketCount++;
@@ -199,8 +199,8 @@ public class AlbumCoverRender extends Render {
 		int op, j;
 		Color c = colorScroll(0);
 
-		for (int i=0; i<buckets; i++) {
-			c = colorScroll((buckets-i)*30);
+		for (int i=0; i<numBuckets; i++) {
+			c = colorScroll((numBuckets-i)*30);
 			if (strobing&&whiteStrobe&&strobeOn) c = Color.WHITE;
 			
 			mag = visualMags[i];

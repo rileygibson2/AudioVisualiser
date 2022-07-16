@@ -23,7 +23,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
-import main.java.renders.Render;
 import main.java.renders.albumcover.AlbumCoverRender;
 import main.java.renders.bars.BarsRender;
 import main.java.renders.basic.BasicRender;
@@ -49,9 +48,8 @@ public class Controller {
 
 	public double[] magnitudes; //Real, uncut or averaged or modified magnitudes
 
-	public Controller() {
+	public Controller(boolean useMic, boolean useSpeaker) {
 		rP = RenderPanel.initialise(this, 1450, 900);
-		
 		renders = new ArrayList<Render>();
 		renders.add(new BasicRender(this));
 		renders.add(new AlbumCoverRender(this));
@@ -65,17 +63,21 @@ public class Controller {
 
 		gui = ControllerGUI.initialise(this);
 		this.capture = true;
-		runSpectro();
+		runSpectro(useMic, useSpeaker);
 	}
 
-	private void runSpectro() {
+	private void runSpectro(boolean useMic, boolean useSpeaker) {
 		//44100
 		final AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100*2, 16, 1, 2, 44100, false);
+		enumerateMicrophones();
+		printMicrophones();
+		
 		try {
 			//Input stuff
-			AudioInputStream audioStream = getFileInputStream("lonedigger.wav");
-			//AudioInputStream audioStream = getMicrophoneInputStream(format);
-
+			AudioInputStream audioStream;
+			if (useMic) audioStream = getMicrophoneInputStream(format);
+			else audioStream = getFileInputStream("lonedigger.wav");
+			
 			//Output stuff
 			Info speakerInfo = new DataLine.Info(SourceDataLine.class, format);
 			speakerLine = (SourceDataLine)AudioSystem.getLine(speakerInfo);
@@ -85,7 +87,7 @@ public class Controller {
 			//Read file
 			final byte[] buffer = new byte[blockLength];
 			while ((audioStream.read(buffer)) != -1)  {
-				speakerLine.write(buffer, 0, blockLength); //Write to speakers
+				if (useSpeaker) speakerLine.write(buffer, 0, blockLength); //Write to speakers
 				if (capture) {
 					//Decode bytes into doubles and use JTransforms to do fft on buffer
 					DoubleFFT_1D fft = new DoubleFFT_1D(buffer.length/2);
@@ -232,7 +234,8 @@ public class Controller {
 	}
 
 	public static void main(String[] args) {
-		new Controller();
+		if (args.length!=0) new Controller(true, false);
+		else new Controller(false, true);
 	}
 
 	public static int random(double min, double max){

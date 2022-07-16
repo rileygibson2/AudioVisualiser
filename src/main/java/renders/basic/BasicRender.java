@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 import main.java.core.Controller;
-import main.java.renders.Painter;
-import main.java.renders.Render;
+import main.java.core.Painter;
+import main.java.core.Render;
 
 public class BasicRender extends Render {
 	
